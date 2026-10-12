@@ -31,12 +31,19 @@ export default {
         sans: ['Poppins', 'sans-serif'],
       },
       animation: {
-        'float':      'float 4s ease-in-out infinite',
-        'pulse-slow': 'pulse 3s ease-in-out infinite',
-        'fade-up':    'fadeUp 0.6s ease both',
-        'shimmer':    'shimmer 2s linear infinite',
-        'wiggle':     'wiggle 0.4s ease',
-        'fade-in':    'fadeIn 0.5s ease both',
+        'float':       'float 4s ease-in-out infinite',
+        'float-slow':  'float 6s ease-in-out infinite',
+        'pulse-slow':  'pulse 3s ease-in-out infinite',
+        'fade-up':     'fadeUp 0.6s ease both',
+        'fade-up-sm':  'fadeUpSm 0.4s ease both',
+        'shimmer':     'shimmer 2s linear infinite',
+        'wiggle':      'wiggle 0.4s ease',
+        'fade-in':     'fadeIn 0.5s ease both',
+        'slide-in-r':  'slideInRight 0.35s ease both',
+        'slide-in-l':  'slideInLeft 0.35s ease both',
+        'pop':         'pop 0.3s cubic-bezier(0.34,1.56,0.64,1) both',
+        'glow-pulse':  'glowPulse 2s ease-in-out infinite',
+        'card-enter':  'cardEnter 0.5s cubic-bezier(0.22,1,0.36,1) both',
       },
       keyframes: {
         float: {
@@ -45,6 +52,10 @@ export default {
         },
         fadeUp: {
           from: { opacity: '0', transform: 'translateY(24px)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeUpSm: {
+          from: { opacity: '0', transform: 'translateY(10px)' },
           to:   { opacity: '1', transform: 'translateY(0)' },
         },
         shimmer: {
@@ -61,6 +72,26 @@ export default {
         fadeIn: {
           from: { opacity: '0' },
           to:   { opacity: '1' },
+        },
+        slideInRight: {
+          from: { opacity: '0', transform: 'translateX(20px)' },
+          to:   { opacity: '1', transform: 'translateX(0)' },
+        },
+        slideInLeft: {
+          from: { opacity: '0', transform: 'translateX(-20px)' },
+          to:   { opacity: '1', transform: 'translateX(0)' },
+        },
+        pop: {
+          from: { opacity: '0', transform: 'scale(0.85)' },
+          to:   { opacity: '1', transform: 'scale(1)' },
+        },
+        glowPulse: {
+          '0%, 100%': { boxShadow: '0 0 12px 2px rgba(236,72,153,0.25)' },
+          '50%':       { boxShadow: '0 0 28px 6px rgba(236,72,153,0.50)' },
+        },
+        cardEnter: {
+          from: { opacity: '0', transform: 'translateY(20px) scale(0.97)' },
+          to:   { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
       },
       backgroundImage: {

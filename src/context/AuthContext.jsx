@@ -79,7 +79,7 @@ export function AuthProvider({ children }) {
   }, [users]) // eslint-disable-line
 
   // ── Registro ──────────────────────────────────────────────────────────────
-  const register = useCallback((name, email, password) => {
+  const register = useCallback((name, email, password, birthdate) => {
     const current = loadUsers()
     if (current.find(u => u.email.toLowerCase() === email.toLowerCase())) {
       return { ok: false, error: 'Ya existe una cuenta con ese email.' }
@@ -87,6 +87,7 @@ export function AuthProvider({ children }) {
     const newUser = {
       id: Date.now().toString(),
       name, email: email.toLowerCase(), password,
+      birthdate: birthdate || null,
       points: 0, pointsAccumulated: 0, pointsEarnedAt: null,
       orders: [], orderCount: 0,
       favorites: [],
@@ -111,6 +112,27 @@ export function AuthProvider({ children }) {
     const checked = checkPointsExpiry(user)
     setCurrentUser(checked)
     setAuthModal(null)
+
+    // Birthday greeting
+    const today = new Date()
+    if (user.birthdate) {
+      const [bd, bm] = user.birthdate.split('-').reverse().map(Number) // DD-MM-YYYY
+      if (bd === today.getDate() && bm === (today.getMonth() + 1)) {
+        setWelcomeMsg(`🎂 ¡Feliz cumpleaños, ${user.name.split(' ')[0]}! Tenés 5 Bs de descuento hoy.`)
+        return { ok: true, birthday: true }
+      }
+    }
+
+    // Reorder nudge: last order > 15 days ago and total > 320 Bs
+    const lastOrder = user.orders?.[0]
+    if (lastOrder) {
+      const daysSince = (Date.now() - new Date(lastOrder.date).getTime()) / (1000 * 60 * 60 * 24)
+      if (daysSince >= 15 && (lastOrder.total || 0) >= 320) {
+        setTimeout(() => setWelcomeMsg(`👋 ¡Hola ${user.name.split(' ')[0]}! Han pasado ${Math.floor(daysSince)} días. Tenés 1 Bs de descuento esperándote. 🎁`), 1500)
+        return { ok: true }
+      }
+    }
+
     setWelcomeMsg(`¡Hola de vuelta, ${user.name.split(' ')[0]}! 👋`)
     return { ok: true }
   }, [])

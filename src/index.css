@@ -3,42 +3,48 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
-  }
-  body {
-    @apply bg-dark-900 text-white font-sans overflow-x-hidden;
-  }
-  * {
-    @apply box-border;
-  }
+  html { scroll-behavior: smooth; }
+  body { @apply bg-dark-900 text-white font-sans overflow-x-hidden; }
+  * { @apply box-border; }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-7 py-3 rounded-full bg-primary-600 hover:bg-primary-700 text-white font-semibold transition-all duration-300 hover:-translate-y-0.5 active:scale-95;
-    box-shadow: 0 0 0 0 rgba(236,72,153,0.4);
+    @apply inline-flex items-center gap-2 px-7 py-3 rounded-full bg-primary-600 text-white font-semibold transition-all duration-300 hover:-translate-y-0.5 active:scale-95;
+    box-shadow: 0 4px 20px rgba(219,39,119,0.35);
   }
   .btn-primary:hover {
-    box-shadow: 0 8px 30px rgba(236,72,153,0.45), 0 0 0 0 rgba(236,72,153,0);
+    background-color: theme('colors.primary.700');
+    box-shadow: 0 8px 32px rgba(219,39,119,0.55), 0 0 0 0 rgba(219,39,119,0);
   }
   .btn-outline {
     @apply inline-flex items-center gap-2 px-7 py-3 rounded-full border-2 border-primary-500 text-white font-semibold transition-all duration-300 hover:bg-primary-600 hover:border-primary-600 hover:-translate-y-0.5;
   }
+
+  /* ── Product card ── */
   .card {
-    @apply bg-dark-700 border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-500/20;
+    @apply bg-dark-700 border border-white/10 rounded-2xl overflow-hidden;
+    transition: transform 0.28s cubic-bezier(0.22,1,0.36,1),
+                box-shadow 0.28s ease,
+                border-color 0.28s ease;
   }
-  .section-title {
-    @apply text-3xl md:text-4xl font-extrabold mb-3;
+  .card:hover {
+    transform: translateY(-6px) scale(1.012);
+    border-color: rgba(219,39,119,0.45);
+    box-shadow: 0 16px 48px rgba(219,39,119,0.18), 0 4px 16px rgba(0,0,0,0.5);
   }
-  .section-title span {
-    @apply text-primary-500;
-  }
-  .section-sub {
-    @apply text-white/50 text-base max-w-xl mx-auto;
-  }
+  .card:active { transform: translateY(-2px) scale(0.99); }
+
+  .section-title { @apply text-3xl md:text-4xl font-extrabold mb-3; }
+  .section-title span { @apply text-primary-500; }
+  .section-sub { @apply text-white/50 text-base max-w-xl mx-auto; }
   .input-field {
-    @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 outline-none focus:border-primary-500 focus:bg-primary-500/5 transition-all duration-300 font-sans text-sm;
+    @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 outline-none transition-all duration-300 font-sans text-sm;
+  }
+  .input-field:focus {
+    border-color: theme('colors.primary.500');
+    background-color: rgba(219,39,119,0.05);
+    box-shadow: 0 0 0 3px rgba(219,39,119,0.12);
   }
 }
 
@@ -53,9 +59,8 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
   /* Scroll reveal */
   .reveal {
     opacity: 0;
@@ -67,37 +72,53 @@
     transform: translateY(0);
   }
   .reveal-left {
-    opacity: 0;
-    transform: translateX(-28px);
+    opacity: 0; transform: translateX(-28px);
     transition: opacity 0.65s ease, transform 0.65s ease;
   }
-  .reveal-left.visible {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  .reveal-left.visible { opacity: 1; transform: translateX(0); }
   .reveal-right {
-    opacity: 0;
-    transform: translateX(28px);
+    opacity: 0; transform: translateX(28px);
     transition: opacity 0.65s ease, transform 0.65s ease;
   }
-  .reveal-right.visible {
-    opacity: 1;
-    transform: translateX(0);
+  .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+  /* Stagger helpers */
+  .delay-100 { transition-delay: 0.10s; }
+  .delay-150 { transition-delay: 0.15s; }
+  .delay-200 { transition-delay: 0.20s; }
+  .delay-300 { transition-delay: 0.30s; }
+  .delay-400 { transition-delay: 0.40s; }
+  .delay-500 { transition-delay: 0.50s; }
+
+  /* Shimmer loading skeleton */
+  .skeleton {
+    background: linear-gradient(90deg,
+      rgba(255,255,255,0.04) 25%,
+      rgba(255,255,255,0.08) 50%,
+      rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
   }
-  /* Stagger delay helpers */
-  .delay-100 { transition-delay: 0.1s; }
-  .delay-200 { transition-delay: 0.2s; }
-  .delay-300 { transition-delay: 0.3s; }
-  .delay-400 { transition-delay: 0.4s; }
-  .delay-500 { transition-delay: 0.5s; }
 }
 
-/* Smooth scroll offset for fixed navbar */
-[id] {
-  scroll-margin-top: 80px;
+[id] { scroll-margin-top: 80px; }
+
+/* ── Catalog tab panel ─────────────────────────────────────────── */
+.catalog-panel {
+  background: linear-gradient(135deg, #130020 0%, #1e0033 100%);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 24px;
+  overflow: hidden;
 }
 
-/* Glow pulse on hover for cards */
-.card:hover {
-  box-shadow: 0 8px 32px rgba(236,72,153,0.18), 0 2px 8px rgba(0,0,0,0.4);
+/* ── Card image zoom on hover ──────────────────────────────────── */
+.card-img {
+  transition: transform 0.45s cubic-bezier(0.22,1,0.36,1);
+}
+.card:hover .card-img { transform: scale(1.07); }
+
+/* ── Glow ring on add-to-cart press ───────────────────────────── */
+.btn-add:focus-visible {
+  outline: 2px solid rgba(219,39,119,0.7);
+  outline-offset: 2px;
 }
