@@ -11,7 +11,7 @@ export default function Cart() {
     coupon, setCoupon,
     pointsRedeemed, setPointsRedeemed,
   } = useCart()
-  const { currentUser, validateCoupon, addOrderPoints, addOrder } = useAuth()
+  const { currentUser, validateCoupon, addOrderPoints, addOrder, consumeCoupon } = useAuth()
 
   const [couponInput, setCouponInput]   = useState('')
   const [couponError, setCouponError]   = useState('')
@@ -56,7 +56,7 @@ export default function Cart() {
     if (pointsRedeemed > 0) discountLines += `\n⭐ Descuento puntos: -Bs. ${pointsRedeemed}`
 
     const userName = currentUser ? `\n👤 Cliente: *${currentUser.name}*` : ''
-    const text = `Hola Bad Bunny Vape! 👋${userName}\n\nQuiero hacer el siguiente pedido:\n\n${lines}\n\nSubtotal: Bs. ${subtotal.toLocaleString('es-BO')}${discountLines}\n\n*Total: Bs. ${total.toLocaleString('es-BO')}*\n\nDirección: Juan Jose Perez 583, Sucre`
+    const text = `Hola Bad Bunny Vape! 👋${userName}\n\nQuiero hacer el siguiente pedido:\n\n${lines}\n\nSubtotal: Bs. ${subtotal.toLocaleString('es-BO')}${discountLines}\n\n*Total: Bs. ${total.toLocaleString('es-BO')}*\n\n📦 Necesito envío a domicilio — por favor coordinen el costo y barrio.\n\nDirección tienda: Juan Jose Perez 583, Sucre`
 
     // Log sale
     const orderData = { items: items.map(i => ({ name: i.name, qty: i.qty, price: i.price })), total, coupon: coupon?.code }
@@ -66,6 +66,7 @@ export default function Cart() {
     if (currentUser) {
       addOrderPoints(total)
       addOrder(orderData)
+      if (coupon) consumeCoupon()
     }
 
     window.open(`https://wa.me/59178580928?text=${encodeURIComponent(text)}`, '_blank')
@@ -251,6 +252,11 @@ export default function Cart() {
               <Send size={15} />
               Confirmar pedido por WhatsApp
             </button>
+
+            {/* Delivery question */}
+            <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-center">
+              <p className="text-white/40 text-[10px]">¿Necesitás envío? Indicalo en el mensaje — se coordina por WhatsApp 🛵</p>
+            </div>
 
             <p className="text-center text-white/25 text-[10px]">
               En caso de falla de fábrica, reclamar al momento de la compra. No se realizan cambios ni devoluciones.

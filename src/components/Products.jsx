@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Plus, Wind, ChevronDown, ChevronUp, Tag, Bell, Scale, X, Check } from 'lucide-react'
+import { Plus, Wind, ChevronDown, ChevronUp, Tag, Bell, Scale, X, Check, Heart } from 'lucide-react'
 import { products, categories } from '../data/products'
 import { useCart } from '../context/CartContext'
-import { useAdmin, loadStockOverrides } from '../context/AdminContext'
+import { useAdmin } from '../context/AdminContext'
+import { useAuth } from '../context/AuthContext'
 import { useScrollReveal } from '../hooks/useScrollReveal'
 
 const badgeStyles = {
@@ -35,8 +36,11 @@ function addToNotifyList(productId, phone) {
 function ProductCard({ p, compareList, onCompareToggle }) {
   const { addItem }          = useCart()
   const { getProductStock }  = useAdmin()
+  const { currentUser, toggleFavorite, isFavorite, setAuthModal } = useAuth()
   const stockInfo            = getProductStock(p.id)
   const isOutOfStock         = stockInfo.disabled || stockInfo.stock === 0
+  const isLowStock           = !isOutOfStock && stockInfo.stock !== null && stockInfo.stock <= 5 && stockInfo.stock > 0
+  const favorited            = isFavorite(p.id)
 
   const [selectedFlavor, setSelectedFlavor] = useState(
     p.flavors.length > 0 ? p.flavors[0] : ''
@@ -54,6 +58,11 @@ function ProductCard({ p, compareList, onCompareToggle }) {
     addItem({ ...p, selectedFlavor })
   }
 
+  const handleFavorite = () => {
+    if (!currentUser) { setAuthModal('login'); return }
+    toggleFavorite(p.id)
+  }
+
   const handleNotify = () => {
     if (!notifyPhone.trim()) return
     addToNotifyList(p.id, notifyPhone.trim())
@@ -66,7 +75,7 @@ function ProductCard({ p, compareList, onCompareToggle }) {
       {/* Compare toggle */}
       <button
         onClick={() => onCompareToggle(p.id)}
-        className={`absolute top-2 right-2 z-10 w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-200 border text-[10px] font-black ${
+        className={`absolute top-2 left-2 z-10 w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-200 border text-[10px] font-black ${
           isInCompare
             ? 'bg-primary-600 border-primary-600 text-white'
             : 'bg-dark-700/80 border-white/10 text-white/30 hover:border-primary-500/40 hover:text-white/60'
@@ -88,11 +97,27 @@ function ProductCard({ p, compareList, onCompareToggle }) {
             {p.badgeText}
           </span>
         )}
+        {/* Extra labels */}
+        {isLowStock && (
+          <span className="absolute top-3 left-3 z-10 text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-orange-500 text-white">Últimas unidades</span>
+        )}
         {p.promoTag && (
-          <span className="absolute top-3 right-3 z-10 bg-green-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">
+          <span className="absolute top-3 right-10 z-10 bg-green-500 text-black text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">
             <Tag size={8} />{p.promoTag}
           </span>
         )}
+        {/* Favorite button */}
+        <button
+          onClick={handleFavorite}
+          className={`absolute top-2 right-2 z-10 w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-200 border ${
+            favorited
+              ? 'bg-rose-500/30 border-rose-500/50 text-rose-400'
+              : 'bg-dark-700/70 border-white/10 text-white/25 hover:border-rose-400/40 hover:text-rose-400'
+          }`}
+          title={favorited ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+        >
+          <Heart size={12} className={favorited ? 'fill-rose-400' : ''} />
+        </button>
         {isOutOfStock && (
           <span className="absolute inset-0 z-10 flex items-center justify-center bg-dark-900/60">
             <span className="bg-rose-500/90 text-white text-xs font-black px-3 py-1.5 rounded-full">AGOTADO</span>

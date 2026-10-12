@@ -22,7 +22,7 @@ const contactInfo = [
     icon: MapPin,
     label: 'Dirección',
     value: 'Juan Jose Perez 583, Sucre, Bolivia',
-    href: 'https://maps.google.com/?q=Juan+Jose+Perez+583+Sucre+Bolivia',
+    href: 'https://maps.google.com/?q=Bad+Bunny+Vape+Sucre+Bolivia',
     color: 'text-rose-400',
     bg: 'bg-rose-400/10',
   },
@@ -75,13 +75,13 @@ export default function Contact() {
               </div>
             ))}
 
-            {/* Google Maps embed */}
+            {/* Google Maps embed — coordenadas reales Bad Bunny Vape */}
             <div className="rounded-2xl overflow-hidden border border-white/10 mt-2">
               <iframe
                 title="Ubicación Bad Bunny Vape Bolivia"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3782.5!2d-65.2627!3d-19.0477!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTnCsDAyJzUxLjciUyA2NcKwMTUnNDUuNyJX!5e0!3m2!1ses!2sbo!4v1234567890"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3782.0!2d-65.2660194!3d-19.0531801!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x93fbcf004f2b9447%3A0x56481ef81f01b578!2sBad%20Bunny%20Vape!5e0!3m2!1ses!2sbo!4v1728432000000"
                 width="100%"
-                height="200"
+                height="220"
                 style={{ border: 0, display: 'block' }}
                 allowFullScreen=""
                 loading="lazy"

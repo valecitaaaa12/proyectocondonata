@@ -1,53 +1,82 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 
-// ── Clientes habilitados para el cupón secreto ────────────────────────────────
-// La admin puede agregar emails aquí o desde el panel admin (localStorage)
+// ── Cupón ─────────────────────────────────────────────────────────────────────
+const COUPON_CODE = 'IvonneSolidario'
+const COUPON_DISCOUNT = 0.05
+const COUPON_EXPIRY = new Date('2026-10-14T23:59:59').getTime()
 const DEFAULT_COUPON_ENABLED_EMAILS = ['ivonne@demo.com']
 
-const COUPON_CODE = 'IvonneSolidario'
-const COUPON_DISCOUNT = 0.05 // 5%
-
-// ── Sistema de puntos ────────────────────────────────────────────────────────
-// 500 Bs = 10 puntos | 10 puntos = 5 Bs de descuento
+// ── Puntos ────────────────────────────────────────────────────────────────────
 export const POINTS_PER_500 = 10
-export const POINTS_VALUE_BS = 5   // 10 puntos = 5 Bs
+export const POINTS_VALUE_BS = 5
 export const BS_PER_POINTS_CYCLE = 500
+const POINTS_EXPIRY_DAYS = 30 // puntos vencen en 30 días
 
-const AuthContext = createContext(null)
+// ── Insignias ─────────────────────────────────────────────────────────────────
+export const BADGES = [
+  { id: 'bronze', label: 'Bronce', minOrders: 25,  color: 'text-amber-600',  bg: 'bg-amber-600/20',  border: 'border-amber-600/30',  emoji: '🥉', benefit: '20 Bs de regalo en tu próximo pedido' },
+  { id: 'silver', label: 'Plata',  minOrders: 50,  color: 'text-slate-300',  bg: 'bg-slate-400/20',  border: 'border-slate-400/30',  emoji: '🥈', benefit: '20 Bs de regalo en tu próximo pedido' },
+  { id: 'gold',   label: 'Oro',    minOrders: 100, color: 'text-amber-400',  bg: 'bg-amber-400/20',  border: 'border-amber-400/30',  emoji: '🏆', benefit: '20 Bs de regalo en tu próximo pedido' },
+]
+
+export function getUserBadge(orderCount) {
+  const count = orderCount || 0
+  if (count >= 100) return BADGES[2]
+  if (count >= 50)  return BADGES[1]
+  if (count >= 25)  return BADGES[0]
+  return null
+}
+
+// ── Storage helpers ───────────────────────────────────────────────────────────
 const STORAGE_KEY = 'bbv_users'
 const SESSION_KEY = 'bbv_session'
 
-// Helpers localStorage --------------------------------------------------------
 function loadUsers() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') } catch { return [] }
 }
-function saveUsers(users) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(users))
-}
+function saveUsers(u) { localStorage.setItem(STORAGE_KEY, JSON.stringify(u)) }
 function loadSession() {
   try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null') } catch { return null }
 }
 
-export function AuthProvider({ children }) {
-  const [users, setUsers] = useState(loadUsers)
-  const [currentUser, setCurrentUser] = useState(loadSession)
-  const [authModal, setAuthModal] = useState(null) // null | 'login' | 'register'
+// ── Check points expiry ───────────────────────────────────────────────────────
+function checkPointsExpiry(user) {
+  if (!user.pointsEarnedAt) return user
+  const earned = new Date(user.pointsEarnedAt).getTime()
+  const now = Date.now()
+  const days = (now - earned) / (1000 * 60 * 60 * 24)
+  if (days >= POINTS_EXPIRY_DAYS && (user.points || 0) > 0) {
+    return { ...user, points: 0, pointsAccumulated: 0, pointsEarnedAt: null }
+  }
+  return user
+}
 
-  // Persistir sesión en sessionStorage
+const AuthContext = createContext(null)
+
+export function AuthProvider({ children }) {
+  const [users, setUsers]           = useState(loadUsers)
+  const [currentUser, setCurrentUser] = useState(() => {
+    const s = loadSession()
+    return s ? checkPointsExpiry(s) : null
+  })
+  const [authModal, setAuthModal]   = useState(null)
+  const [welcomeMsg, setWelcomeMsg] = useState('')
+
+  // Persist session
   useEffect(() => {
     if (currentUser) sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser))
     else sessionStorage.removeItem(SESSION_KEY)
   }, [currentUser])
 
-  // Sincronizar datos del usuario actual cuando cambian los users
+  // Sync current user when users array changes
   useEffect(() => {
     if (currentUser) {
       const updated = users.find(u => u.email === currentUser.email)
       if (updated && JSON.stringify(updated) !== JSON.stringify(currentUser)) {
-        setCurrentUser(updated)
+        setCurrentUser(checkPointsExpiry(updated))
       }
     }
-  }, [users]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [users]) // eslint-disable-line
 
   // ── Registro ──────────────────────────────────────────────────────────────
   const register = useCallback((name, email, password) => {
@@ -57,12 +86,10 @@ export function AuthProvider({ children }) {
     }
     const newUser = {
       id: Date.now().toString(),
-      name,
-      email: email.toLowerCase(),
-      password, // En producción: hash. Aquí es demo local.
-      points: 0,
-      pointsAccumulated: 0, // Bs acumulados para calcular puntos
-      orders: [],
+      name, email: email.toLowerCase(), password,
+      points: 0, pointsAccumulated: 0, pointsEarnedAt: null,
+      orders: [], orderCount: 0,
+      favorites: [],
       createdAt: new Date().toISOString(),
     }
     const updated = [...current, newUser]
@@ -70,6 +97,7 @@ export function AuthProvider({ children }) {
     setUsers(updated)
     setCurrentUser(newUser)
     setAuthModal(null)
+    setWelcomeMsg(`¡Bienvenida, ${name.split(' ')[0]}! 🎉 Tu cuenta está lista.`)
     return { ok: true }
   }, [])
 
@@ -80,38 +108,39 @@ export function AuthProvider({ children }) {
       u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
     )
     if (!user) return { ok: false, error: 'Email o contraseña incorrectos.' }
-    setCurrentUser(user)
+    const checked = checkPointsExpiry(user)
+    setCurrentUser(checked)
     setAuthModal(null)
+    setWelcomeMsg(`¡Hola de vuelta, ${user.name.split(' ')[0]}! 👋`)
     return { ok: true }
   }, [])
 
-  // ── Logout ────────────────────────────────────────────────────────────────
   const logout = useCallback(() => {
     setCurrentUser(null)
+    setWelcomeMsg('')
   }, [])
 
-  // ── Agregar puntos tras compra ─────────────────────────────────────────────
-  // Llama a esto cuando se confirma un pedido
+  // ── Puntos ────────────────────────────────────────────────────────────────
   const addOrderPoints = useCallback((totalBs) => {
-    if (!currentUser) return
+    if (!currentUser) return 0
     const current = loadUsers()
     const idx = current.findIndex(u => u.email === currentUser.email)
-    if (idx === -1) return
+    if (idx === -1) return 0
     const u = { ...current[idx] }
     const newAccum = (u.pointsAccumulated || 0) + totalBs
     const cycles = Math.floor(newAccum / BS_PER_POINTS_CYCLE)
     const pointsEarned = cycles * POINTS_PER_500
     u.pointsAccumulated = newAccum % BS_PER_POINTS_CYCLE
     u.points = (u.points || 0) + pointsEarned
+    u.pointsEarnedAt = pointsEarned > 0 ? new Date().toISOString() : u.pointsEarnedAt
+    u.orderCount = (u.orderCount || 0) + 1
     current[idx] = u
     saveUsers(current)
-    setUsers(current)
+    setUsers([...current])
     setCurrentUser(u)
     return pointsEarned
   }, [currentUser])
 
-  // ── Canjear puntos ────────────────────────────────────────────────────────
-  // Devuelve Bs de descuento canjeados
   const redeemPoints = useCallback((pointsToRedeem) => {
     if (!currentUser || (currentUser.points || 0) < pointsToRedeem) return 0
     const discountBs = (pointsToRedeem / POINTS_PER_500) * POINTS_VALUE_BS
@@ -119,29 +148,47 @@ export function AuthProvider({ children }) {
     const idx = current.findIndex(u => u.email === currentUser.email)
     if (idx === -1) return 0
     const u = { ...current[idx] }
-    u.points = u.points - pointsToRedeem
+    u.points -= pointsToRedeem
     current[idx] = u
     saveUsers(current)
-    setUsers(current)
+    setUsers([...current])
     setCurrentUser(u)
     return discountBs
   }, [currentUser])
 
-  // ── Registrar pedido ──────────────────────────────────────────────────────
+  // ── Pedidos ───────────────────────────────────────────────────────────────
   const addOrder = useCallback((orderData) => {
     if (!currentUser) return
     const current = loadUsers()
     const idx = current.findIndex(u => u.email === currentUser.email)
     if (idx === -1) return
     const u = { ...current[idx] }
-    u.orders = [
-      { id: Date.now().toString(), date: new Date().toISOString(), ...orderData },
-      ...(u.orders || []),
-    ]
+    u.orders = [{ id: Date.now().toString(), date: new Date().toISOString(), ...orderData }, ...(u.orders || [])]
     current[idx] = u
     saveUsers(current)
-    setUsers(current)
+    setUsers([...current])
     setCurrentUser(u)
+  }, [currentUser])
+
+  // ── Favoritos ─────────────────────────────────────────────────────────────
+  const toggleFavorite = useCallback((productId) => {
+    if (!currentUser) return
+    const current = loadUsers()
+    const idx = current.findIndex(u => u.email === currentUser.email)
+    if (idx === -1) return
+    const u = { ...current[idx] }
+    const favs = u.favorites || []
+    u.favorites = favs.includes(productId)
+      ? favs.filter(id => id !== productId)
+      : [...favs, productId]
+    current[idx] = u
+    saveUsers(current)
+    setUsers([...current])
+    setCurrentUser(u)
+  }, [currentUser])
+
+  const isFavorite = useCallback((productId) => {
+    return (currentUser?.favorites || []).includes(productId)
   }, [currentUser])
 
   // ── Cupón ─────────────────────────────────────────────────────────────────
@@ -149,18 +196,33 @@ export function AuthProvider({ children }) {
     if (code.trim().toLowerCase() !== COUPON_CODE.toLowerCase()) {
       return { ok: false, error: 'Cupón inválido.' }
     }
-    // Verificar si el usuario está habilitado
-    const enabledList = JSON.parse(localStorage.getItem('bbv_coupon_emails') || 'null')
-      || DEFAULT_COUPON_ENABLED_EMAILS
+    if (Date.now() > COUPON_EXPIRY) {
+      return { ok: false, error: 'Este cupón ya venció.' }
+    }
+    const enabledList = JSON.parse(localStorage.getItem('bbv_coupon_emails') || 'null') || DEFAULT_COUPON_ENABLED_EMAILS
     if (!currentUser) return { ok: false, error: 'Debés iniciar sesión para usar este cupón.' }
-    const enabled = enabledList.some(e => e.toLowerCase() === currentUser.email.toLowerCase())
-    if (!enabled) return { ok: false, error: 'No estás habilitado para usar este cupón.' }
+    const entry = enabledList.find(e => {
+      if (typeof e === 'string') return e.toLowerCase() === currentUser.email.toLowerCase()
+      return e.email?.toLowerCase() === currentUser.email.toLowerCase()
+    })
+    if (!entry) return { ok: false, error: 'No estás habilitado para usar este cupón.' }
+    // Limit de usos
+    const maxUses = typeof entry === 'object' ? (entry.maxUses ?? 999) : 999
+    const usedKey = `bbv_coupon_uses_${currentUser.email}`
+    const used = parseInt(localStorage.getItem(usedKey) || '0')
+    if (used >= maxUses) return { ok: false, error: 'Ya usaste este cupón el máximo de veces.' }
     return { ok: true, discount: COUPON_DISCOUNT, label: '5% de descuento' }
+  }, [currentUser])
+
+  const consumeCoupon = useCallback(() => {
+    if (!currentUser) return
+    const usedKey = `bbv_coupon_uses_${currentUser.email}`
+    const used = parseInt(localStorage.getItem(usedKey) || '0')
+    localStorage.setItem(usedKey, String(used + 1))
   }, [currentUser])
 
   // ── Admin helpers ─────────────────────────────────────────────────────────
   const getAllUsers = useCallback(() => loadUsers(), [])
-
   const updateUser = useCallback((email, patch) => {
     const current = loadUsers()
     const idx = current.findIndex(u => u.email === email)
@@ -175,9 +237,11 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       currentUser, users,
       authModal, setAuthModal,
+      welcomeMsg, setWelcomeMsg,
       register, login, logout,
       addOrderPoints, redeemPoints, addOrder,
-      validateCoupon,
+      toggleFavorite, isFavorite,
+      validateCoupon, consumeCoupon,
       getAllUsers, updateUser,
     }}>
       {children}
