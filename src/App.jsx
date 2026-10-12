@@ -10,7 +10,7 @@ import PromoBanner    from './components/PromoBanner'
 import Mayoreo        from './components/Mayoreo'
 import PromoEngine    from './components/PromoEngine'
 import BudgetFinder   from './components/BudgetFinder'
-import DeliveryZones  from './components/DeliveryZones'
+
 import InfoSection    from './components/InfoSection'
 import Guides         from './components/Guides'
 import Contact        from './components/Contact'
@@ -65,7 +65,6 @@ export default function App() {
               <Brands />
               <PromoBanner />
               <Mayoreo />
-              <DeliveryZones />
               <InfoSection />
               <Guides />
               <Contact />
