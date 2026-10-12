@@ -4,9 +4,9 @@ import { useCart } from '../context/CartContext'
 
 const navLinks = [
   { href: '#inicio',    label: 'Inicio' },
-  { href: '#productos', label: 'Productos' },
+  { href: '#productos', label: 'Catálogo' },
   { href: '#marcas',    label: 'Marcas' },
-  { href: '#ofertas',   label: 'Ofertas' },
+  { href: '#mayoreo',   label: 'Mayoreo' },
   { href: '#contacto',  label: 'Contacto' },
 ]
 

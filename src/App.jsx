@@ -1,10 +1,10 @@
-import { useState } from 'react'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Stats from './components/Stats'
 import Products from './components/Products'
 import Brands from './components/Brands'
 import PromoBanner from './components/PromoBanner'
+import Mayoreo from './components/Mayoreo'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 import Cart from './components/Cart'
@@ -22,6 +22,7 @@ export default function App() {
           <Products />
           <Brands />
           <PromoBanner />
+          <Mayoreo />
           <Contact />
         </main>
         <Footer />

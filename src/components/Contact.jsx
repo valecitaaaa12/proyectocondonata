@@ -114,16 +114,52 @@ export default function Contact() {
               <select name="producto" value={form.producto} onChange={handleChange}
                 className="input-field">
                 <option value="">Seleccioná un producto</option>
-                <option>Lost Mary MO10000</option>
-                <option>Lost Mary OS5000</option>
-                <option>Elf Bar BC5000</option>
-                <option>Geek Bar Pulse 9000</option>
-                <option>Geek Bar Skyview 25K</option>
-                <option>Vuse Go 5000</option>
-                <option>Vozol Star 12000</option>
-                <option>SMOK Nord 5</option>
-                <option>Vaporesso XROS 4</option>
-                <option>Pack x3 (Oferta especial)</option>
+                <optgroup label="🚬 Desechables">
+                  <option>Gippro 600 – Bs. 40</option>
+                  <option>Gippro 1600 – Bs. 70</option>
+                  <option>Diamond 1k – Bs. 105</option>
+                  <option>Fume 5k – Bs. 140</option>
+                </optgroup>
+                <optgroup label="🔌 Recargable Tipo C">
+                  <option>Waka Pocket 6k – Bs. 145</option>
+                  <option>Funky Lands 7k – Bs. 165</option>
+                  <option>Elfbar EW 9k – Bs. 200–220</option>
+                  <option>Elfbar EW 16k – Bs. 210</option>
+                  <option>Ploox 9k – Bs. 185–220</option>
+                  <option>Instabar 15k – Bs. 180</option>
+                  <option>Waka Sopro 15k – Bs. 180</option>
+                  <option>Life Pod SK 15k – Bs. 180</option>
+                  <option>V-Play 20k – Bs. 180</option>
+                  <option>Geek Bar Pulse X 25k – Bs. 215</option>
+                  <option>Waka Boost 30k – Bs. 235</option>
+                  <option>Waka Blast +Ice 36k – Bs. 240</option>
+                  <option>Waka Fasta Turbo 46k – Bs. 245</option>
+                  <option>Waka Icon 50k – Bs. 290</option>
+                  <option>Waka Double Power 70k – Bs. 325</option>
+                  <option>Black Sheep 30k – Bs. 285–310</option>
+                  <option>Black Sheep 40k – Bs. 300</option>
+                  <option>Airmez 40k – Bs. 250</option>
+                  <option>Life Pod One 40k – Bs. 280</option>
+                  <option>Life Pod Fit 30k – Bs. 240</option>
+                </optgroup>
+                <optgroup label="🧱 Lego / Kits">
+                  <option>Life Pod Eco I Pro 8k – Bs. 165</option>
+                  <option>Life Pod Eco II 10k – Bs. 185</option>
+                  <option>Life Pod Eco III 10k – Bs. 235</option>
+                  <option>Kit Life Pod Eco I Completo – Bs. 240</option>
+                  <option>Kit Life Pod Eco III 20k – Bs. 400</option>
+                  <option>Waka Pod Creator Lego 20k – Bs. 190</option>
+                  <option>Waka Kit Creator Lego 15k – Bs. 250</option>
+                  <option>20k Waka Creator Lego – Bs. 260</option>
+                  <option>Moss Kit Creator Lego 25k – Bs. 260</option>
+                </optgroup>
+                <optgroup label="🎁 Accesorios">
+                  <option>Parches Nicotina Tacja – Bs. 90</option>
+                  <option>Lanyard Collarín – Bs. 10</option>
+                  <option>Polera Waka Original – Bs. 150</option>
+                  <option>Jelly Shot Four Loko – Bs. 45</option>
+                </optgroup>
+                <option>Mayoreo / Consulta distribuidores</option>
                 <option>Otro / Consulta general</option>
               </select>
             </div>
