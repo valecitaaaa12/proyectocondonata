@@ -1,4 +1,4 @@
-import { ArrowDown, Star, Zap } from 'lucide-react'
+import { ArrowDown, Star, Zap, ShieldCheck } from 'lucide-react'
 
 export default function Hero() {
   return (
@@ -6,7 +6,6 @@ export default function Hero() {
 
       {/* Background */}
       <div className="absolute inset-0 bg-hero-gradient" />
-      {/* Dot pattern */}
       <div className="absolute inset-0 opacity-30"
         style={{ backgroundImage: 'radial-gradient(circle, rgba(236,72,153,0.15) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       {/* Glow orbs */}
@@ -15,9 +14,8 @@ export default function Hero() {
 
       <div className="relative max-w-6xl mx-auto px-5 w-full grid md:grid-cols-2 gap-12 items-center py-16">
 
-        {/* Left content */}
+        {/* Left */}
         <div className="animate-fade-up">
-          {/* Tag */}
           <div className="inline-flex items-center gap-2 bg-primary-500/10 border border-primary-500/30 text-primary-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-6">
             <Zap size={12} className="fill-primary-400 text-primary-400" />
             Abierto las 24 horas · Sucre, Bolivia
@@ -29,9 +27,15 @@ export default function Hero() {
             en Bolivia
           </h1>
 
-          <p className="text-white/50 text-lg leading-relaxed mb-8 max-w-md">
+          <p className="text-white/50 text-lg leading-relaxed mb-6 max-w-md">
             Encontrá las marcas más reconocidas del mercado con los mejores sabores y precios. Envíos a todo Bolivia.
           </p>
+
+          {/* Nicotine warning badge */}
+          <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-medium px-3 py-1.5 rounded-full mb-6">
+            <ShieldCheck size={12} />
+            Productos con nicotina · Solo mayores de 18 años
+          </div>
 
           {/* Rating */}
           <div className="flex items-center gap-2 mb-8">
@@ -53,25 +57,25 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Right – floating product showcase */}
+        {/* Right – floating showcase */}
         <div className="hidden md:flex justify-center items-center">
           <div className="relative w-80 h-80">
-            {/* Main circle */}
             <div className="animate-float absolute inset-0 rounded-full border-2 border-primary-500/20 bg-gradient-to-br from-primary-600/10 to-purple-600/10 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
               <div className="text-7xl filter drop-shadow-2xl">💨</div>
               <span className="text-primary-300 font-bold text-lg">Bad Bunny Vape</span>
               <span className="text-white/40 text-sm">Sucre, Bolivia</span>
             </div>
-
-            {/* Orbiting badges */}
             <div className="absolute -top-4 -right-4 bg-dark-700 border border-primary-500/40 rounded-2xl px-3 py-2 shadow-xl shadow-primary-500/20 animate-pulse-slow">
-              <p className="text-primary-400 font-bold text-xs">+15 marcas</p>
+              <p className="text-primary-400 font-bold text-xs">+45 productos</p>
             </div>
             <div className="absolute -bottom-4 -left-4 bg-dark-700 border border-amber-500/40 rounded-2xl px-3 py-2 shadow-xl shadow-amber-500/20">
               <p className="text-amber-400 font-bold text-xs">24hs abierto</p>
             </div>
             <div className="absolute top-1/2 -right-10 -translate-y-1/2 bg-dark-700 border border-purple-500/40 rounded-2xl px-3 py-2 shadow-xl">
               <p className="text-purple-400 font-bold text-xs">Envío express</p>
+            </div>
+            <div className="absolute top-1/2 -left-10 -translate-y-1/2 bg-dark-700 border border-emerald-500/40 rounded-2xl px-3 py-2 shadow-xl">
+              <p className="text-emerald-400 font-bold text-xs">⭐ Puntos</p>
             </div>
           </div>
         </div>

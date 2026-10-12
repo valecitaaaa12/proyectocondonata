@@ -5,6 +5,8 @@ const navLinks = [
   { href: '#productos', label: 'Catálogo' },
   { href: '#marcas',    label: 'Marcas' },
   { href: '#mayoreo',   label: 'Mayoreo' },
+  { href: '#guias',     label: 'Guías' },
+  { href: '#nosotros',  label: 'Nosotros' },
   { href: '#contacto',  label: 'Contacto' },
 ]
 
@@ -17,7 +19,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <a href="#inicio" className="flex items-center gap-2.5 font-extrabold text-xl mb-4">
-              <span className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center">
+              <span className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/30">
                 <Wind size={18} className="text-white" />
               </span>
               <span className="text-white">Bad Bunny <span className="text-primary-500">Vape</span></span>
@@ -47,7 +49,7 @@ export default function Footer() {
               {navLinks.map(l => (
                 <li key={l.href}>
                   <a href={l.href}
-                    className="text-white/40 text-sm hover:text-white transition-colors hover:pl-1 inline-block transition-all duration-200">
+                    className="text-white/40 text-sm hover:text-white transition-all duration-200 hover:pl-1 inline-block">
                     {l.label}
                   </a>
                 </li>
@@ -81,7 +83,7 @@ export default function Footer() {
         <div className="max-w-6xl mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-white/30 text-xs">© 2026 Bad Bunny Vape Bolivia – Todos los derechos reservados.</p>
           <div className="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-medium px-3 py-1.5 rounded-full">
-            ⚠️ Solo para mayores de 18 años
+            ⚠️ Solo para mayores de 18 años · Nicotina: sustancia adictiva
           </div>
         </div>
       </div>

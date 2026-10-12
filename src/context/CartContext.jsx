@@ -2,13 +2,14 @@ import { createContext, useContext, useState, useCallback } from 'react'
 
 const CartContext = createContext(null)
 
-// Cada item en el carrito se identifica por id + sabor seleccionado
 const itemKey = (id, flavor) => `${id}__${flavor ?? ''}`
 
 export function CartProvider({ children }) {
-  const [items, setItems]   = useState([])
-  const [isOpen, setIsOpen] = useState(false)
-  const [toast, setToast]   = useState({ visible: false, message: '' })
+  const [items, setItems]         = useState([])
+  const [isOpen, setIsOpen]       = useState(false)
+  const [toast, setToast]         = useState({ visible: false, message: '' })
+  const [coupon, setCoupon]       = useState(null)  // { code, discount, label } | null
+  const [pointsRedeemed, setPointsRedeemed] = useState(0) // Bs de descuento por puntos
 
   const showToast = useCallback((message) => {
     setToast({ visible: true, message })
@@ -45,14 +46,24 @@ export function CartProvider({ children }) {
     )
   }, [])
 
-  const total = items.reduce((s, i) => s + (i.price ?? 0) * i.qty, 0)
+  const clearCart = useCallback(() => {
+    setItems([])
+    setCoupon(null)
+    setPointsRedeemed(0)
+  }, [])
+
+  const subtotal = items.reduce((s, i) => s + (i.price ?? 0) * i.qty, 0)
+  const couponDiscount = coupon ? Math.round(subtotal * coupon.discount) : 0
+  const total = Math.max(0, subtotal - couponDiscount - pointsRedeemed)
   const count = items.reduce((s, i) => s + i.qty, 0)
 
   return (
     <CartContext.Provider value={{
       items, isOpen, setIsOpen,
-      addItem, removeItem, changeQty,
-      total, count, toast
+      addItem, removeItem, changeQty, clearCart,
+      subtotal, couponDiscount, total, count, toast,
+      coupon, setCoupon,
+      pointsRedeemed, setPointsRedeemed,
     }}>
       {children}
     </CartContext.Provider>
