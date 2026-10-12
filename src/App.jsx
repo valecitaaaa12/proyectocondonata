@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import AgeGate from './components/AgeGate'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Stats from './components/Stats'
@@ -12,9 +14,16 @@ import Toast from './components/Toast'
 import { CartProvider } from './context/CartContext'
 
 export default function App() {
+  const [verified, setVerified] = useState(false)
+
+  // Mientras no pase la verificación, solo mostramos AgeGate
+  if (!verified) {
+    return <AgeGate onVerified={() => setVerified(true)} />
+  }
+
   return (
     <CartProvider>
-      <div className="min-h-screen bg-dark-900">
+      <div className="min-h-screen bg-dark-900 animate-[fadeIn_0.6s_ease]">
         <Navbar />
         <main>
           <Hero />

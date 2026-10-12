@@ -31,10 +31,12 @@ export default {
         sans: ['Poppins', 'sans-serif'],
       },
       animation: {
-        'float': 'float 4s ease-in-out infinite',
+        'float':      'float 4s ease-in-out infinite',
         'pulse-slow': 'pulse 3s ease-in-out infinite',
-        'fade-up': 'fadeUp 0.6s ease both',
-        'shimmer': 'shimmer 2s linear infinite',
+        'fade-up':    'fadeUp 0.6s ease both',
+        'shimmer':    'shimmer 2s linear infinite',
+        'wiggle':     'wiggle 0.4s ease',
+        'fade-in':    'fadeIn 0.5s ease both',
       },
       keyframes: {
         float: {
@@ -48,7 +50,18 @@ export default {
         shimmer: {
           '0%':   { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
-        }
+        },
+        wiggle: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '20%':       { transform: 'translateX(-10px)' },
+          '40%':       { transform: 'translateX(10px)' },
+          '60%':       { transform: 'translateX(-8px)' },
+          '80%':       { transform: 'translateX(8px)' },
+        },
+        fadeIn: {
+          from: { opacity: '0' },
+          to:   { opacity: '1' },
+        },
       },
       backgroundImage: {
         'hero-gradient': 'radial-gradient(ellipse 80% 60% at 60% 40%, rgba(236,72,153,0.3) 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 15% 80%, rgba(168,85,247,0.2) 0%, transparent 60%), linear-gradient(135deg, #0a0010 0%, #1e0033 100%)',
