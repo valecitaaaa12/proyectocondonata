@@ -6,6 +6,7 @@ import Stats               from './components/Stats'
 import ShippingBanner      from './components/ShippingBanner'
 import Products            from './components/Products'
 import WeeklyFlavors       from './components/WeeklyFlavors'
+import CommunitySection    from './components/CommunitySection'
 import Brands              from './components/Brands'
 import PromoBanner         from './components/PromoBanner'
 import Mayoreo             from './components/Mayoreo'
@@ -62,6 +63,7 @@ export default function App() {
               <Stats />
               <Products />
               <WeeklyFlavors />
+              <CommunitySection />
               <PromoEngine />
               <BudgetFinder />
               <Brands />

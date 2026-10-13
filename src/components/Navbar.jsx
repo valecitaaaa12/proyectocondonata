@@ -9,6 +9,7 @@ const navLinks = [
   { href: '#productos', label: 'Catálogo' },
   { href: '#marcas',    label: 'Marcas' },
   { href: '#mayoreo',   label: 'Mayoreo' },
+  { href: '#comunidad', label: 'Comunidad' },
   { href: '#guias',     label: 'Guías' },
   { href: '#contacto',  label: 'Contacto' },
 ]
