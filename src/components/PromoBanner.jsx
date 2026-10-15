@@ -58,12 +58,12 @@ export default function PromoBanner() {
               </div>
               <div className="bg-white text-dark-900 rounded-2xl px-6 py-3 shadow-2xl shadow-sky-500/20">
                 <p className="text-xs font-black text-gray-600 uppercase tracking-wider mb-0.5">Promo</p>
-                <p className="text-3xl font-black text-dark-900 leading-none">2 × 50 Bs</p>
+                <p className="text-3xl font-black text-dark-900 leading-none">1 × 20 Bs</p>
               </div>
             </div>
 
             <a
-              href="https://wa.me/59178580928?text=Hola%20Bad%20Bunny%20Vape!%20Quiero%20la%20promo%20Gippro%20600%20%E2%80%93%202x50%20Bs%20%F0%9F%94%A5"
+              href="https://wa.me/59178580928?text=Hola%20Bad%20Bunny%20Vape!%20Quiero%20la%20promo%20Gippro%20600%20%E2%80%93%201x20%20Bs%20%F0%9F%94%A5"
               target="_blank" rel="noreferrer"
               className="btn-primary text-base px-8 py-4 rounded-2xl"
             >
@@ -81,7 +81,7 @@ export default function PromoBanner() {
 
                 {/* Precio grande encima */}
                 <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-white text-dark-900 font-black text-xl px-6 py-2 rounded-full shadow-2xl whitespace-nowrap">
-                  AHORA 2×50 Bs
+                  AHORA 1x20 Bs
                 </div>
 
                 {/* Emojis de vapers */}
