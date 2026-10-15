@@ -2,9 +2,11 @@ import { useState, useRef, useEffect } from 'react'
 import {
   Plus, Wind, ChevronDown, ChevronUp, Tag, Bell,
   Scale, X, Check, Heart, Search, SlidersHorizontal,
-  Zap, Package, Plug, Layers, ShoppingBag,
+  Zap, Package, Plug, Layers, ShoppingBag, Share2,
 } from 'lucide-react'
-import { products, categories } from '../data/products'
+import { categories } from '../data/products'
+import { getMergedProducts } from '../context/AdminContext'
+import NewProductBanner from './NewProductBanner'
 import { useCart } from '../context/CartContext'
 import { useAdmin } from '../context/AdminContext'
 import { useAuth } from '../context/AuthContext'
@@ -48,7 +50,7 @@ const badgeStyles = {
 
 // Cross-sell: simplistic — same category, excluding self, sorted random
 function getCrossSell(p) {
-  const pool = products.filter(x => x.id !== p.id && x.category === p.category && x.price)
+  const pool = getMergedProducts().filter(x => x.id !== p.id && x.category === p.category && x.price)
   const seed = p.id * 31
   const r = (s => () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646 })(seed)
   return [...pool].sort(() => r() - 0.5).slice(0, 3)
@@ -76,6 +78,13 @@ function ProductCard({ p, compareList, onCompareToggle, animDelay = 0 }) {
 
   const hasFlavors = p.flavors.length > 1 || (p.flavors.length === 1 && !p.flavors[0].startsWith('Solo'))
   const crossSell  = getCrossSell(p)
+
+  const handleShare = () => {
+    const flavor = selectedFlavor && !selectedFlavor.startsWith('Solo') ? ` - ${selectedFlavor}` : ''
+    const price = p.price ? `Bs. ${p.price}` : 'Consultar precio'
+    const text = `¡Mirá este vape en Bad Bunny Vape Bolivia! 🔥\n\n*${p.name}${flavor}*\n${p.puffs} · ${p.nicotina} nicotina\n${price}\n\nhttps://bad-bunny-vape-bolivia.vercel.app/#productos`
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+  }
 
   const handleAdd = () => {
     if (isOutOfStock || !p.price) return
@@ -238,6 +247,14 @@ function ProductCard({ p, compareList, onCompareToggle, animDelay = 0 }) {
             )}
           </div>
 
+          {/* Share */}
+          <button onClick={handleShare}
+            className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 hover:bg-emerald-500/20 hover:border-emerald-400/40 hover:text-emerald-400 text-white/25 flex items-center justify-center transition-all duration-200 shrink-0"
+            aria-label="Compartir por WhatsApp"
+            title="Compartir por WhatsApp">
+            <Share2 size={13} />
+          </button>
+
           {isOutOfStock ? (
             <button onClick={() => setNotifyOpen(v => !v)}
               className="flex items-center gap-1.5 px-3 h-9 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/40 hover:text-amber-300 text-white/35 text-[11px] font-bold transition-all">
@@ -319,7 +336,7 @@ function ProductCard({ p, compareList, onCompareToggle, animDelay = 0 }) {
 // ── Comparator ────────────────────────────────────────────────────────────────
 function Comparator({ ids, onClose }) {
   if (ids.length < 2) return null
-  const items = ids.map(id => products.find(p => p.id === id)).filter(Boolean)
+  const items = ids.map(id => getMergedProducts().find(p => p.id === id)).filter(Boolean)
   const rows = [
     { label: 'Precio',   fn: p => p.price ? `Bs. ${p.price}` : 'Consultar' },
     { label: 'Puffs',    fn: p => p.puffs },
@@ -394,6 +411,7 @@ const tabAccents = { all: '#ec4899', desechable: '#38bdf8', tipoC: '#a78bfa', le
 
 // ── Main Products section ─────────────────────────────────────────────────────
 export default function Products() {
+  const products = getMergedProducts()
   const [activeTab,   setActiveTab]   = useState('all')
   const [search,      setSearch]      = useState('')
   const [compareList, setCompareList] = useState([])
@@ -432,6 +450,8 @@ export default function Products() {
           <h2 className="section-title">Nuestro <span>catálogo</span></h2>
           <p className="section-sub">Precios reales. Elegí tu sabor y pedí por WhatsApp.</p>
         </div>
+
+        <NewProductBanner />
 
         {/* ── Catalog panel ── */}
         <div className="catalog-panel">
