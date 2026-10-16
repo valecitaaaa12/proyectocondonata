@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { products } from '../data/products'
+import { getMergedProducts } from '../context/AdminContext'
 import { useCart } from '../context/CartContext'
 import { Plus, Wind, Zap, ChevronRight } from 'lucide-react'
 import { useScrollReveal } from '../hooks/useScrollReveal'
@@ -52,11 +52,11 @@ function getRecommendation(answers) {
   const budgetMax = budget === 'budget_low' ? 100 : budget === 'budget_mid' ? 200 : 9999
   const budgetMin = budget === 'budget_low' ? 0   : budget === 'budget_mid' ? 100 : 200
 
-  let pool = products.filter(p => p.price && p.price >= budgetMin && p.price <= budgetMax && p.category !== 'accesorio')
+  let pool = getMergedProducts().filter(p => p.price && p.price >= budgetMin && p.price <= budgetMax && p.category !== 'accesorio')
 
   if (prio === 'price')  pool = [...pool].sort((a, b) => a.price - b.price)
   if (prio === 'puffs')  pool = [...pool].sort((a, b) => parseInt(b.puffs) - parseInt(a.puffs))
-  if (prio === 'tech')   pool = pool.filter(p => p.desc.toLowerCase().includes('pantalla') || p.tipo.toLowerCase().includes('pantalla'))
+  if (prio === 'tech')   pool = pool.filter(p => (p.desc || '').toLowerCase().includes('pantalla') || (p.tipo || '').toLowerCase().includes('pantalla'))
 
   if (nic === 'low')  pool = pool.filter(p => p.nicotina === '2%' || p.nicotina === '3%')
   if (nic === 'high') pool = pool.filter(p => p.nicotina === '5%')
@@ -68,7 +68,7 @@ function MiniCard({ p }) {
   const { addItem } = useCart()
   return (
     <div className="bg-dark-700 border border-white/10 rounded-2xl p-4 flex gap-3 hover:border-primary-500/30 transition-all duration-300">
-      <span className="text-3xl shrink-0">{p.emoji}</span>
+      <span className="text-3xl shrink-0">{p.emoji || p.name?.charAt(0) || '🛍️'}</span>
       <div className="flex-1 min-w-0">
         <p className="text-primary-400 text-[10px] font-black uppercase">{p.brand}</p>
         <p className="font-bold text-white text-sm truncate">{p.name}</p>
@@ -82,7 +82,7 @@ function MiniCard({ p }) {
       </div>
       <div className="flex flex-col items-end gap-2 shrink-0">
         <span className="font-black text-white text-base">Bs. {p.price}</span>
-        <button onClick={() => addItem({ ...p, selectedFlavor: p.flavors[0] })}
+        <button onClick={() => addItem({ ...p, selectedFlavor: p.flavors?.[0] })}
           className="w-7 h-7 rounded-lg bg-primary-600 hover:bg-primary-700 text-white flex items-center justify-center transition-all hover:scale-110 active:scale-95">
           <Plus size={13} />
         </button>
@@ -100,7 +100,7 @@ export default function BudgetFinder() {
   const [ref, visible] = useScrollReveal()
 
   const budgetProducts = activeBudget
-    ? products.filter(p => {
+    ? getMergedProducts().filter(p => {
         const b = budgets.find(b => b.id === activeBudget)
         return p.price && p.price >= b.min && p.price <= b.max && p.category !== 'accesorio'
       }).slice(0, 6)

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Clock, Gift, Flame, ChevronLeft, ChevronRight, Star, Trophy, Tag } from 'lucide-react'
-import { products } from '../data/products'
+import { getMergedProducts } from '../context/AdminContext'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useScrollReveal } from '../hooks/useScrollReveal'
@@ -20,7 +20,7 @@ function seededShuffle(arr, seed) {
 function getMondayDeal() {
   const now = new Date()
   const seed = now.getFullYear() * 100 + now.getMonth() * 4 + Math.floor(now.getDate() / 7)
-  const pool = products.filter(p => p.price && p.price >= 100 && p.category !== 'accesorio')
+  const pool = getMergedProducts().filter(p => p.price && p.price >= 100 && p.category !== 'accesorio')
   const shuffled = seededShuffle(pool, seed)
   return shuffled[0] || null
 }
@@ -80,7 +80,7 @@ function getSeasonalPromo() {
 
 function getSeasonalProducts() {
   const seed = new Date().getMonth() * 31 + new Date().getDate()
-  const pool = products.filter(p => p.price && p.price >= 100 && p.category !== 'accesorio')
+  const pool = getMergedProducts().filter(p => p.price && p.price >= 100 && p.category !== 'accesorio')
   return seededShuffle(pool, seed).slice(0, 5)
 }
 
@@ -100,7 +100,7 @@ function PromoCarousel({ items, discount }) {
           <ChevronLeft size={16} />
         </button>
         <div className="flex-1 flex items-center gap-4">
-          <span className="text-4xl shrink-0">{p.emoji}</span>
+          <span className="text-4xl shrink-0">{p.emoji || p.name?.charAt(0) || '🏷️'}</span>
           <div className="flex-1 min-w-0">
             <p className="text-primary-400 text-[10px] font-black uppercase">{p.brand}</p>
             <p className="font-bold text-white text-sm truncate">{p.name}</p>
@@ -111,7 +111,7 @@ function PromoCarousel({ items, discount }) {
             </div>
           </div>
         </div>
-        <button onClick={() => addItem({ ...p, selectedFlavor: p.flavors[0], price: p.price - discount })}
+        <button onClick={() => addItem({ ...p, selectedFlavor: p.flavors?.[0], price: p.price - discount })}
           className="w-9 h-9 rounded-xl bg-primary-600 hover:bg-primary-700 flex items-center justify-center text-white shrink-0 transition-all hover:scale-110">
           <Tag size={15} />
         </button>
@@ -239,7 +239,7 @@ export default function PromoEngine() {
             {/* Deal product */}
             {mondayDeal && (
               <div className={`flex items-center gap-3 rounded-xl p-3 border ${isActive ? 'bg-primary-600/10 border-primary-500/30' : 'bg-white/5 border-white/5 opacity-60'}`}>
-                <span className="text-3xl">{mondayDeal.emoji}</span>
+                <span className="text-3xl">{mondayDeal.emoji || mondayDeal.name?.charAt(0) || '🔥'}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-white font-bold text-sm truncate">{mondayDeal.name}</p>
                   <div className="flex items-center gap-2">
@@ -248,7 +248,7 @@ export default function PromoEngine() {
                   </div>
                 </div>
                 {isActive && (
-                  <button onClick={() => addItem({ ...mondayDeal, selectedFlavor: mondayDeal.flavors[0], price: mondayDeal.price - 10 })}
+                  <button onClick={() => addItem({ ...mondayDeal, selectedFlavor: mondayDeal.flavors?.[0], price: mondayDeal.price - 10 })}
                     className="btn-primary px-3 py-2 text-xs rounded-xl">
                     Agregar
                   </button>

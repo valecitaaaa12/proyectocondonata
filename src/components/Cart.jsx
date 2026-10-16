@@ -121,7 +121,16 @@ export default function Cart() {
             items.map(item => (
               <div key={`${item.id}-${item.selectedFlavor}`}
                 className="bg-dark-700 border border-white/5 rounded-2xl p-3 flex gap-3 group hover:border-white/10 transition-colors">
-                <span className="text-2xl shrink-0 mt-0.5">{item.emoji}</span>
+                {item.emoji ? (
+                  <span className="text-2xl shrink-0 mt-0.5">{item.emoji}</span>
+                ) : item.image ? (
+                  <img src={item.image} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0 mt-0.5 bg-dark-600"
+                    onError={e => { e.currentTarget.style.display = 'none' }} />
+                ) : (
+                  <span className="w-7 h-7 rounded-lg bg-dark-600 border border-white/10 flex items-center justify-center text-primary-300 font-black text-xs shrink-0 mt-0.5">
+                    {(item.name || '?').charAt(0)}
+                  </span>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-xs text-white truncate">{item.name}</p>
                   {item.selectedFlavor && !item.selectedFlavor.startsWith('Solo') && (

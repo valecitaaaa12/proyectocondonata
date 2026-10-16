@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { X, Star, ShoppingBag, Gift, RefreshCw, LogOut, Heart, Trophy, Clock } from 'lucide-react'
 import { useAuth, POINTS_PER_500, POINTS_VALUE_BS, BADGES, getUserBadge } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
-import { products } from '../data/products'
+import { getMergedProducts } from '../context/AdminContext'
 
 function BadgeCard({ badge }) {
   if (!badge) return null
@@ -36,7 +36,7 @@ export default function UserProfile({ onClose }) {
     : null
   const daysLeft = pointsExpiry ? Math.max(0, Math.ceil((pointsExpiry - Date.now()) / (1000 * 60 * 60 * 24))) : null
 
-  const favProducts = products.filter(p => (currentUser.favorites || []).includes(p.id))
+  const favProducts = getMergedProducts().filter(p => (currentUser.favorites || []).includes(p.id))
 
   const handleRedeem = () => {
     if (!canRedeem) return
@@ -179,7 +179,7 @@ export default function UserProfile({ onClose }) {
                 ) : (
                   favProducts.map(p => (
                     <div key={p.id} className="flex items-center gap-3 bg-dark-700 border border-white/10 rounded-xl px-3 py-2.5">
-                      <span className="text-2xl shrink-0">{p.emoji}</span>
+                      <span className="text-2xl shrink-0">{p.emoji || p.name?.charAt(0) || '🛍️'}</span>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-white text-xs truncate">{p.name}</p>
                         <p className="text-primary-400 font-bold text-xs">Bs. {p.price ?? 'Consultar'}</p>

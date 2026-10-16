@@ -68,7 +68,8 @@ function ProductCard({ p, compareList, onCompareToggle, animDelay = 0 }) {
   const favorited    = isFavorite(p.id)
   const meta         = categoryMeta[p.category] || categoryMeta.accesorio
 
-  const [selectedFlavor, setSelectedFlavor] = useState(p.flavors[0] || '')
+  const flavors    = p.flavors || []
+  const [selectedFlavor, setSelectedFlavor] = useState(flavors[0] || '')
   const [showFlavors,    setShowFlavors]    = useState(false)
   const [notifyOpen,     setNotifyOpen]     = useState(false)
   const [notifyPhone,    setNotifyPhone]    = useState('')
@@ -76,7 +77,7 @@ function ProductCard({ p, compareList, onCompareToggle, animDelay = 0 }) {
   const [showCross,      setShowCross]      = useState(false)
   const [added,          setAdded]          = useState(false)
 
-  const hasFlavors = p.flavors.length > 1 || (p.flavors.length === 1 && !p.flavors[0].startsWith('Solo'))
+  const hasFlavors = flavors.length > 1 || (flavors.length === 1 && !flavors[0].startsWith('Solo'))
   const crossSell  = getCrossSell(p)
 
   const handleShare = () => {
@@ -223,7 +224,7 @@ function ProductCard({ p, compareList, onCompareToggle, animDelay = 0 }) {
             </button>
             {showFlavors && (
               <div className="absolute z-30 top-full left-0 right-0 mt-1 bg-dark-800 border border-white/10 rounded-xl overflow-hidden shadow-2xl shadow-black/60 max-h-44 overflow-y-auto animate-[fadeUpSm_0.2s_ease_both]">
-                {p.flavors.map((f, i) => (
+                {flavors.map((f, i) => (
                   <button key={i}
                     onClick={() => { setSelectedFlavor(f); setShowFlavors(false) }}
                     className={`w-full text-left px-3 py-2 text-[11px] font-medium transition-colors ${
@@ -312,7 +313,7 @@ function ProductCard({ p, compareList, onCompareToggle, animDelay = 0 }) {
                 {crossSell.map(cs => (
                   <div key={cs.id} className="flex items-center gap-2 bg-white/5 rounded-xl px-2.5 py-1.5 hover:bg-white/10 transition-colors cursor-pointer"
                     onClick={() => {
-                      useCart.addItem?.({ ...cs, selectedFlavor: cs.flavors[0] })
+                      addItem({ ...cs, selectedFlavor: cs.flavors?.[0] })
                       // scroll to product
                       document.getElementById(`prod-${cs.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                     }}>
@@ -342,7 +343,7 @@ function Comparator({ ids, onClose }) {
     { label: 'Puffs',    fn: p => p.puffs },
     { label: 'Nicotina', fn: p => p.nicotina },
     { label: 'Tipo',     fn: p => p.tipo },
-    { label: 'Sabores',  fn: p => `${p.flavors.length}` },
+    { label: 'Sabores',  fn: p => `${(p.flavors || []).length}` },
   ]
   return (
     <>
@@ -427,7 +428,7 @@ export default function Products() {
     ? filteredByTab.filter(p =>
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.brand.toLowerCase().includes(search.toLowerCase()) ||
-        p.flavors.some(f => f.toLowerCase().includes(search.toLowerCase()))
+        (p.flavors || []).some(f => f.toLowerCase().includes(search.toLowerCase()))
       )
     : filteredByTab
 

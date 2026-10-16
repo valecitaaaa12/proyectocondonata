@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Sparkles, ChevronLeft, ChevronRight, X, ShoppingCart } from 'lucide-react'
 import { useCart } from '../context/CartContext'
+import { getMergedProducts } from '../context/AdminContext'
 
 // ── All "nuevoproducto" images + the general one ───────────────────────────────
 const NEW_PRODUCT_IMAGES = [
@@ -79,23 +80,33 @@ export default function NewProductBanner() {
   const data = NEW_PRODUCT_DATA[idx]
   const hasErr = imgError[idx]
 
+  // El precio/nombre/sabores oficiales siempre vienen del catálogo (evita
+  // desincronización entre el banner y la sección de productos).
+  const catalogItem = data.id ? getMergedProducts().find(p => p.id === data.id) : null
+  const name    = catalogItem?.name    ?? data.name
+  const brand   = catalogItem?.brand   ?? data.brand
+  const puffs   = catalogItem?.puffs   ?? data.puffs
+  const price   = catalogItem?.price   ?? data.price
+  const flavors = catalogItem?.flavors?.length ? catalogItem.flavors : data.flavors
+
   const handleAdd = () => {
-    if (!data.id || !data.price) return
+    if (!data.id || !price) return
     addItem({
       id: data.id,
-      name: data.name,
-      brand: data.brand,
-      price: data.price,
-      puffs: data.puffs,
-      nicotina: '5%',
-      tipo: data.tag,
-      desc: data.tag,
-      flavors: data.flavors,
-      selectedFlavor: data.flavors[0],
-      image: img,
+      name,
+      brand,
+      price,
+      puffs,
+      nicotina: catalogItem?.nicotina ?? '5%',
+      tipo: catalogItem?.tipo ?? data.tag,
+      desc: catalogItem?.desc ?? data.tag,
+      flavors,
+      selectedFlavor: flavors[0],
+      image: catalogItem?.image ?? img,
+      emoji: catalogItem?.emoji,
       badge: 'nuevo',
       badgeText: 'NUEVO',
-      category: 'tipoC',
+      category: catalogItem?.category ?? 'tipoC',
     })
   }
 
@@ -116,7 +127,7 @@ export default function NewProductBanner() {
           {!hasErr ? (
             <img
               src={img}
-              alt={data.name}
+              alt={name}
               className="w-full h-full object-cover object-center"
               style={{ maxHeight: 240 }}
               onError={() => setImgError(e => ({ ...e, [idx]: true }))}
@@ -124,7 +135,7 @@ export default function NewProductBanner() {
           ) : (
             <div className="flex flex-col items-center gap-2 text-white/20 p-8">
               <Sparkles size={32} />
-              <span className="text-sm font-bold">{data.name}</span>
+              <span className="text-sm font-bold">{name}</span>
             </div>
           )}
           {/* Gradient overlay */}
@@ -148,19 +159,19 @@ export default function NewProductBanner() {
               <span className="bg-primary-600/20 border border-primary-500/30 text-primary-300 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
                 <Sparkles size={9} />Nuevo producto
               </span>
-              <span className="text-white/25 text-[10px]">{data.brand}</span>
+              <span className="text-white/25 text-[10px]">{brand}</span>
             </div>
 
-            <h3 className="font-black text-white text-xl leading-tight mb-1">{data.name}</h3>
+            <h3 className="font-black text-white text-xl leading-tight mb-1">{name}</h3>
 
             <p className="text-white/45 text-xs mb-3">{data.tag}</p>
 
-            {data.puffs && (
+            {puffs && (
               <div className="flex items-center gap-3 flex-wrap mb-3">
                 <span className="text-primary-300 text-xs font-semibold bg-primary-500/10 border border-primary-500/20 px-2.5 py-1 rounded-full">
-                  {data.puffs}
+                  {puffs}
                 </span>
-                {data.flavors.slice(0, 3).map(f => (
+                {flavors.slice(0, 3).map(f => (
                   <span key={f} className="text-white/35 text-[11px]">{f}</span>
                 ))}
               </div>
@@ -169,13 +180,13 @@ export default function NewProductBanner() {
 
           <div className="flex items-center justify-between gap-3">
             <div>
-              {data.price ? (
-                <span className="text-white font-black text-2xl">Bs. {data.price}</span>
+              {price ? (
+                <span className="text-white font-black text-2xl">Bs. {price}</span>
               ) : (
                 <span className="text-amber-400 font-bold text-sm">Consultar precio</span>
               )}
             </div>
-            {data.id && data.price && (
+            {data.id && price && (
               <button onClick={handleAdd}
                 className="btn-primary px-4 py-2 text-sm rounded-xl flex items-center gap-2">
                 <ShoppingCart size={14} />
