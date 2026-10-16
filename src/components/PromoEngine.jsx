@@ -17,7 +17,7 @@ function seededShuffle(arr, seed) {
 }
 
 // ── Monday deal (21:30–22:30, -10 Bs on 1 random product) ─────────────────────
-function getMondayDeal() {
+export function getMondayDeal() {
   const now = new Date()
   const seed = now.getFullYear() * 100 + now.getMonth() * 4 + Math.floor(now.getDate() / 7)
   const pool = getMergedProducts().filter(p => p.price && p.price >= 100 && p.category !== 'accesorio')
@@ -25,7 +25,7 @@ function getMondayDeal() {
   return shuffled[0] || null
 }
 
-function getMondayWindow() {
+export function getMondayWindow() {
   const now = new Date()
   const day = now.getDay() // 0=Sun, 1=Mon
   // Next Monday
@@ -62,7 +62,7 @@ function CountdownBlock({ v, label }) {
 }
 
 // ── Seasonal promos (-15 Bs on 5 products, carousel) ──────────────────────────
-function getSeasonalPromo() {
+export function getSeasonalPromo() {
   const now = new Date()
   const m = now.getMonth() + 1, d = now.getDate()
   // Black Friday: last Friday of November
@@ -78,7 +78,7 @@ function getSeasonalPromo() {
   return null
 }
 
-function getSeasonalProducts() {
+export function getSeasonalProducts() {
   const seed = new Date().getMonth() * 31 + new Date().getDate()
   const pool = getMergedProducts().filter(p => p.price && p.price >= 100 && p.category !== 'accesorio')
   return seededShuffle(pool, seed).slice(0, 5)

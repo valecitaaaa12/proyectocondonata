@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { X, Package, Users, BarChart2, ShieldCheck, Eye, EyeOff, LogOut, Check, Edit2, RotateCcw, Plus, Trash2 } from 'lucide-react'
+import { X, Package, Users, BarChart2, ShieldCheck, Eye, EyeOff, LogOut, Check, Edit2, RotateCcw, Plus, Trash2, Megaphone } from 'lucide-react'
 import { useAdmin, loadSalesLog, loadAgeVerifications, getMergedProducts } from '../context/AdminContext'
 import { useAuth } from '../context/AuthContext'
 import { products as BASE_PRODUCTS, categories } from '../data/products'
+import PromoNotifier from './PromoNotifier'
 
 // ── Admin Login ───────────────────────────────────────────────────────────────
 function AdminLogin({ onClose }) {
@@ -422,6 +423,7 @@ export default function AdminPanel({ onClose }) {
 
   const tabs = [
     { id: 'products', label: 'Editar productos', icon: Edit2 },
+    { id: 'promos',   label: '📣 Ofertas',       icon: Megaphone },
     { id: 'stock',    label: 'Stock',             icon: Package },
     { id: 'clients',  label: 'Clientes',          icon: Users },
     { id: 'sales',    label: 'Ventas',            icon: BarChart2 },
@@ -462,6 +464,7 @@ export default function AdminPanel({ onClose }) {
 
       <div className="flex-1 overflow-y-auto p-6">
         {tab === 'products' && <ProductEditor />}
+        {tab === 'promos'   && <PromoNotifier />}
         {tab === 'stock'    && <StockManager />}
         {tab === 'clients'  && <ClientsManager />}
         {tab === 'sales'    && <SalesLog />}
