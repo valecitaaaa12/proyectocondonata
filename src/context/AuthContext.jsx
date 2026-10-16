@@ -1,10 +1,16 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 
-// ── Cupón ─────────────────────────────────────────────────────────────────────
-const COUPON_CODE = 'IvonneSolidario'
-const COUPON_DISCOUNT = 0.05
-const COUPON_EXPIRY = new Date('2026-10-14T23:59:59').getTime()
-const DEFAULT_COUPON_ENABLED_EMAILS = ['ivonne@demo.com']
+// ── Limpieza: cupones eliminados del sitio ────────────────────────────────────
+// Borra datos de cupones anteriores (IvonneSolidario y usos) de cualquier
+// navegador que visite el sitio.
+function purgeCouponData() {
+  try {
+    localStorage.removeItem('bbv_coupon_emails')
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('bbv_coupon_uses_'))
+      .forEach(k => localStorage.removeItem(k))
+  } catch { /* storage no disponible */ }
+}
 
 // ── Puntos ────────────────────────────────────────────────────────────────────
 export const POINTS_PER_500 = 10
@@ -67,6 +73,9 @@ export function AuthProvider({ children }) {
     if (currentUser) sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser))
     else sessionStorage.removeItem(SESSION_KEY)
   }, [currentUser])
+
+  // Limpieza de datos de cupones eliminados (una vez al cargar)
+  useEffect(() => { purgeCouponData() }, [])
 
   // Sync current user when users array changes
   useEffect(() => {
@@ -213,36 +222,6 @@ export function AuthProvider({ children }) {
     return (currentUser?.favorites || []).includes(productId)
   }, [currentUser])
 
-  // ── Cupón ─────────────────────────────────────────────────────────────────
-  const validateCoupon = useCallback((code) => {
-    if (code.trim().toLowerCase() !== COUPON_CODE.toLowerCase()) {
-      return { ok: false, error: 'Cupón inválido.' }
-    }
-    if (Date.now() > COUPON_EXPIRY) {
-      return { ok: false, error: 'Este cupón ya venció.' }
-    }
-    const enabledList = JSON.parse(localStorage.getItem('bbv_coupon_emails') || 'null') || DEFAULT_COUPON_ENABLED_EMAILS
-    if (!currentUser) return { ok: false, error: 'Debés iniciar sesión para usar este cupón.' }
-    const entry = enabledList.find(e => {
-      if (typeof e === 'string') return e.toLowerCase() === currentUser.email.toLowerCase()
-      return e.email?.toLowerCase() === currentUser.email.toLowerCase()
-    })
-    if (!entry) return { ok: false, error: 'No estás habilitado para usar este cupón.' }
-    // Limit de usos
-    const maxUses = typeof entry === 'object' ? (entry.maxUses ?? 999) : 999
-    const usedKey = `bbv_coupon_uses_${currentUser.email}`
-    const used = parseInt(localStorage.getItem(usedKey) || '0')
-    if (used >= maxUses) return { ok: false, error: 'Ya usaste este cupón el máximo de veces.' }
-    return { ok: true, discount: COUPON_DISCOUNT, label: '5% de descuento' }
-  }, [currentUser])
-
-  const consumeCoupon = useCallback(() => {
-    if (!currentUser) return
-    const usedKey = `bbv_coupon_uses_${currentUser.email}`
-    const used = parseInt(localStorage.getItem(usedKey) || '0')
-    localStorage.setItem(usedKey, String(used + 1))
-  }, [currentUser])
-
   // ── Admin helpers ─────────────────────────────────────────────────────────
   const getAllUsers = useCallback(() => loadUsers(), [])
   const updateUser = useCallback((email, patch) => {
@@ -263,7 +242,6 @@ export function AuthProvider({ children }) {
       register, login, logout,
       addOrderPoints, redeemPoints, addOrder,
       toggleFavorite, isFavorite,
-      validateCoupon, consumeCoupon,
       getAllUsers, updateUser,
     }}>
       {children}

@@ -240,9 +240,19 @@ function ProductCard({ p, compareList, onCompareToggle, animDelay = 0 }) {
 
         {/* Price + Add */}
         <div className="flex items-center justify-between gap-2 mt-auto pt-1">
-          <div>
+          <div className="flex items-center gap-2 flex-wrap">
             {p.price ? (
-              <span className="text-white font-black text-xl leading-none">Bs. {p.price}</span>
+              <>
+                <span className="text-white font-black text-xl leading-none">Bs. {p.price}</span>
+                {p.oldPrice > p.price && (
+                  <>
+                    <span className="text-white/30 text-xs line-through">Bs. {p.oldPrice}</span>
+                    <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300">
+                      −{Math.round((1 - p.price / p.oldPrice) * 100)}%
+                    </span>
+                  </>
+                )}
+              </>
             ) : (
               <span className="text-amber-400 font-bold text-sm">Consultar</span>
             )}
@@ -322,7 +332,10 @@ function ProductCard({ p, compareList, onCompareToggle, animDelay = 0 }) {
                       {cs.name.charAt(0)}
                     </span>
                     <span className="text-white/50 text-[10px] truncate flex-1">{cs.name}</span>
-                    <span className="text-white/40 font-bold text-[10px] shrink-0">Bs. {cs.price}</span>
+                    <span className="shrink-0 flex items-center gap-1">
+                      {cs.oldPrice > cs.price && <span className="text-white/20 line-through text-[9px]">Bs. {cs.oldPrice}</span>}
+                      <span className="text-white/40 font-bold text-[10px]">Bs. {cs.price}</span>
+                    </span>
                   </div>
                 ))}
               </div>
@@ -339,7 +352,7 @@ function Comparator({ ids, onClose }) {
   if (ids.length < 2) return null
   const items = ids.map(id => getMergedProducts().find(p => p.id === id)).filter(Boolean)
   const rows = [
-    { label: 'Precio',   fn: p => p.price ? `Bs. ${p.price}` : 'Consultar' },
+    { label: 'Precio',   fn: p => p.price ? (p.oldPrice > p.price ? `Bs. ${p.price} (antes Bs. ${p.oldPrice})` : `Bs. ${p.price}`) : 'Consultar' },
     { label: 'Puffs',    fn: p => p.puffs },
     { label: 'Nicotina', fn: p => p.nicotina },
     { label: 'Tipo',     fn: p => p.tipo },

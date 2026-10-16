@@ -111,7 +111,11 @@ function StockManager() {
 // ── Product Editor ─────────────────────────────────────────────────────────────
 const BADGE_OPTIONS = ['', 'oferta', 'mega', 'nuevo', 'limited']
 
-function ProductEditorRow({ p, onSave, onReset, isEdited }) {
+// ¿Tiene precio de oferta activo? (el precio normal debe ser mayor al de oferta)
+const hasOffer = (p) => Number(p?.oldPrice) > 0 && Number(p?.price) > 0 && Number(p.oldPrice) > Number(p.price)
+const discountPct = (p) => Math.round((1 - Number(p.price) / Number(p.oldPrice)) * 100)
+
+function ProductEditorRow({ p, onSave, onReset, isEdited, isPublished }) {
   const [open,   setOpen]   = useState(false)
   const [draft,  setDraft]  = useState({ ...p })
   const [saved,  setSaved]  = useState(false)
@@ -138,7 +142,13 @@ function ProductEditorRow({ p, onSave, onReset, isEdited }) {
   )
 
   const handleSave = () => {
-    onSave(p.id, draft)
+    const next = { ...draft }
+    // Si hay oferta activa y no eligió otro badge, marcar "oferta" automáticamente
+    if (hasOffer(next) && (!next.badge || next.badge === 'oferta')) {
+      next.badge     = 'oferta'
+      next.badgeText = 'OFERTA'
+    }
+    onSave(p.id, next)
     setSaved(true)
     setTimeout(() => setSaved(false), 1500)
     setOpen(false)
@@ -148,8 +158,33 @@ function ProductEditorRow({ p, onSave, onReset, isEdited }) {
     <div className={`border rounded-xl overflow-hidden ${isEdited ? 'border-primary-500/30' : 'border-white/8'}`}>
       <div className="flex items-center gap-3 px-4 py-3 bg-dark-700">
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-white text-sm truncate">{p.name}</p>
-          <p className="text-white/35 text-xs">{p.brand} · {p.price ? `Bs. ${p.price}` : 'Consultar'}{isEdited ? ' · ✏️ editado' : ''}</p>
+          <p className="font-semibold text-white text-sm truncate">
+            {p.name}
+            {isPublished && (
+              <span className="text-[9px] font-black ml-2 px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 align-middle">
+                🌐 PUBLICADO
+              </span>
+            )}
+            {isEdited && (
+              <span className="text-[9px] font-black ml-1.5 px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 align-middle">
+                ✏️ BORRADOR
+              </span>
+            )}
+          </p>
+          <p className="text-white/35 text-xs flex items-center gap-1.5 flex-wrap">
+            <span>{p.brand} ·</span>
+            {hasOffer(p) ? (
+              <>
+                <span className="text-rose-400 font-bold">Bs. {p.price} en oferta</span>
+                <span className="line-through text-white/25">Bs. {p.oldPrice}</span>
+                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300">
+                  −{discountPct(p)}%
+                </span>
+              </>
+            ) : (
+              <span>{p.price ? `Bs. ${p.price}` : 'Consultar'}</span>
+            )}
+          </p>
         </div>
         <div className="flex gap-2">
           {isEdited && (
@@ -158,7 +193,7 @@ function ProductEditorRow({ p, onSave, onReset, isEdited }) {
               <RotateCcw size={12} />
             </button>
           )}
-          <button onClick={() => setOpen(v => !v)}
+          <button onClick={() => { const opening = !open; setOpen(opening); if (opening) setDraft({ ...p }) }}
             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${open ? 'bg-primary-600 text-white' : 'bg-white/5 text-white/40 hover:text-white'}`}>
             <Edit2 size={12} />
           </button>
@@ -169,7 +204,15 @@ function ProductEditorRow({ p, onSave, onReset, isEdited }) {
         <div className="px-4 pb-4 pt-2 bg-dark-800/60 border-t border-white/8 grid sm:grid-cols-2 gap-3">
           {field('name',     'Nombre')}
           {field('brand',    'Marca')}
-          {field('price',    'Precio (Bs.)', 'number')}
+          {field('price',    'Precio oferta (Bs.)', 'number')}
+          {field('oldPrice', 'Precio normal (Bs.)', 'number')}
+          <div className="sm:col-span-2">
+            <p className="text-[10px] text-white/35 bg-white/5 border border-white/10 rounded-lg px-3 py-2 leading-relaxed">
+              💡 <strong className="text-white/60">Precio oferta</strong> = lo que se cobra. <strong className="text-white/60">Precio normal</strong> = el precio original que aparece tachado.
+              Dejá el precio normal <strong className="text-white/60">más alto</strong> que el de oferta para que el sitio muestre el tachado, el descuento y la etiqueta OFERTA.
+              Dejalo vacío si no hay oferta.
+            </p>
+          </div>
           {field('puffs',    'Puffs')}
           {field('nicotina', 'Nicotina')}
           {field('tipo',     'Tipo')}
@@ -204,11 +247,15 @@ function ProductEditorRow({ p, onSave, onReset, isEdited }) {
 }
 
 function ProductEditor() {
-  const { editProduct, resetProductEdits, productEdits, addCustomProduct, deleteCustomProduct, customProducts } = useAdmin()
+  const {
+    editProduct, resetProductEdits, productEdits, addCustomProduct, deleteCustomProduct, customProducts,
+    publishedInfo, pendingCount, publishing, publishError, publishChanges, isProductPublished,
+  } = useAdmin()
   const [search, setSearch] = useState('')
   const [catFilter, setCatFilter] = useState('all')
   const [showAddForm, setShowAddForm] = useState(false)
-  const [newDraft, setNewDraft] = useState({ name: '', brand: '', category: 'tipoC', price: '', puffs: '', nicotina: '5%', tipo: '', desc: '', badge: 'nuevo', badgeText: 'NUEVO', flavors: '', promoTag: '' })
+  const [publishedOk, setPublishedOk] = useState(false)
+  const [newDraft, setNewDraft] = useState({ name: '', brand: '', category: 'tipoC', price: '', oldPrice: '', puffs: '', nicotina: '5%', tipo: '', desc: '', badge: 'nuevo', badgeText: 'NUEVO', flavors: '', promoTag: '' })
 
   const allProducts = getMergedProducts()
   const filtered = allProducts.filter(p => {
@@ -217,19 +264,67 @@ function ProductEditor() {
     return matchSearch && matchCat
   })
 
+  const emptyDraft = { name: '', brand: '', category: 'tipoC', price: '', oldPrice: '', puffs: '', nicotina: '5%', tipo: '', desc: '', badge: 'nuevo', badgeText: 'NUEVO', flavors: '', promoTag: '' }
+
   const handleAddCustom = () => {
     if (!newDraft.name || !newDraft.brand) return
+    const offer  = newDraft.oldPrice ? Number(newDraft.oldPrice) : null
+    const price  = newDraft.price ? Number(newDraft.price) : null
+    const onOffer = offer && price && offer > price
     addCustomProduct({
       ...newDraft,
-      price: newDraft.price ? Number(newDraft.price) : null,
+      price,
+      oldPrice: offer,
+      badge: onOffer ? 'oferta' : newDraft.badge,
+      badgeText: onOffer ? 'OFERTA' : newDraft.badgeText,
       flavors: newDraft.flavors.split('\n').map(s => s.trim()).filter(Boolean),
     })
-    setNewDraft({ name: '', brand: '', category: 'tipoC', price: '', puffs: '', nicotina: '5%', tipo: '', desc: '', badge: 'nuevo', badgeText: 'NUEVO', flavors: '', promoTag: '' })
+    setNewDraft(emptyDraft)
     setShowAddForm(false)
+  }
+
+  const handlePublish = async () => {
+    const res = await publishChanges()
+    if (res.ok) { setPublishedOk(true); setTimeout(() => setPublishedOk(false), 2500) }
   }
 
   return (
     <div className="space-y-4">
+      {/* ── Publicar cambios (esto es lo que ven TODOS los visitantes) ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-dark-700 border border-emerald-500/20 rounded-2xl px-4 py-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-white text-xs font-bold flex items-center gap-1.5">
+            🌐 Publicar en el sitio
+            {publishedInfo?.updatedAt && (
+              <span className="text-white/30 font-normal">
+                · última publicación {new Date(publishedInfo.updatedAt).toLocaleString('es-BO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </p>
+          <p className="text-white/40 text-[10px] mt-0.5">
+            {pendingCount > 0 ? (
+              <>
+                Tenés <strong className="text-amber-300">{pendingCount} cambio{pendingCount !== 1 ? 's' : ''} sin publicar</strong>.
+                Guardar edita solo acá; <strong className="text-white/60">Publicar</strong> hace que todos los clientes vean los precios nuevos.
+              </>
+            ) : (
+              'Todo publicado. Los cambios que guardes se ven solo en tu navegador hasta que publiques.'
+            )}
+          </p>
+          {publishError && <p className="text-rose-400 text-[10px] mt-1 font-semibold">⚠️ {publishError}</p>}
+        </div>
+        <button onClick={handlePublish} disabled={publishing || pendingCount === 0}
+          className={`shrink-0 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-black transition-all ${
+            publishedOk
+              ? 'bg-emerald-500 text-white'
+              : pendingCount === 0
+                ? 'bg-white/5 border border-white/10 text-white/25 cursor-not-allowed'
+                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+          }`}>
+          {publishedOk ? <><Check size={13} /> Publicado</> : publishing ? 'Publicando…' : <><Megaphone size={13} /> Publicar cambios</>}
+        </button>
+      </div>
+
       {/* Filters */}
       <div className="flex gap-2 flex-wrap">
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
@@ -262,9 +357,14 @@ function ProductEditor() {
             </div>
           ))}
           <div>
-            <label className="text-white/40 text-xs mb-1 block">Precio (Bs.)</label>
+            <label className="text-white/40 text-xs mb-1 block">Precio oferta (Bs.)</label>
             <input type="number" value={newDraft.price} onChange={e => setNewDraft(d => ({ ...d, price: e.target.value }))}
               className="input-field py-2 text-xs" />
+          </div>
+          <div>
+            <label className="text-white/40 text-xs mb-1 block">Precio normal (Bs.)</label>
+            <input type="number" value={newDraft.oldPrice} onChange={e => setNewDraft(d => ({ ...d, oldPrice: e.target.value }))}
+              placeholder="Sin oferta" className="input-field py-2 text-xs" />
           </div>
           <div>
             <label className="text-white/40 text-xs mb-1 block">Categoría</label>
@@ -309,7 +409,17 @@ function ProductEditor() {
                   <div className="flex items-center gap-3 px-4 py-3 bg-dark-700">
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-white text-sm truncate">{p.name} <span className="text-emerald-400 text-[10px] font-black ml-1">CUSTOM</span></p>
-                      <p className="text-white/35 text-xs">{p.brand} · {p.price ? `Bs. ${p.price}` : 'Consultar'}</p>
+                      <p className="text-white/35 text-xs flex items-center gap-1.5">
+                        <span>{p.brand} ·</span>
+                        {hasOffer(p) ? (
+                          <>
+                            <span className="text-rose-400 font-bold">Bs. {p.price}</span>
+                            <span className="line-through text-white/25">Bs. {p.oldPrice}</span>
+                          </>
+                        ) : (
+                          <span>{p.price ? `Bs. ${p.price}` : 'Consultar'}</span>
+                        )}
+                      </p>
                     </div>
                     <button onClick={() => deleteCustomProduct(p.id)}
                       className="w-7 h-7 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 hover:bg-rose-500/20 transition-colors">
@@ -321,6 +431,7 @@ function ProductEditor() {
                 <ProductEditorRow
                   p={p}
                   isEdited={isEdited}
+                  isPublished={isProductPublished(p.id)}
                   onSave={editProduct}
                   onReset={resetProductEdits}
                 />
@@ -336,25 +447,17 @@ function ProductEditor() {
 // ── Clients Manager ───────────────────────────────────────────────────────────
 function ClientsManager() {
   const { getAllUsers } = useAuth()
-  const [users, setUsers] = useState(() => getAllUsers())
-  const [couponEmails, setCouponEmails] = useState(
-    () => JSON.parse(localStorage.getItem('bbv_coupon_emails') || '["ivonne@demo.com"]')
-  )
-  const toggleCoupon = (email) => {
-    const list = couponEmails.includes(email) ? couponEmails.filter(e => e !== email) : [...couponEmails, email]
-    setCouponEmails(list)
-    localStorage.setItem('bbv_coupon_emails', JSON.stringify(list))
-  }
+  const users = getAllUsers()
   return (
     <div className="space-y-3">
       <p className="text-white/40 text-xs">
-        Marca con ✓ los clientes habilitados para el cupón <strong className="text-white/60">IvonneSolidario</strong> (5%).
+        Clientes registrados en el sitio y sus puntos acumulados.
       </p>
       {users.length === 0 ? (
         <p className="text-white/30 text-sm text-center py-8">No hay clientes registrados aún.</p>
       ) : (
         users.map(u => (
-          <div key={u.id} className="flex items-center gap-3 bg-dark-700 border border-white/10 rounded-xl px-4 py-3">
+          <div key={u.email || u.id} className="flex items-center gap-3 bg-dark-700 border border-white/10 rounded-xl px-4 py-3">
             <div className="w-8 h-8 rounded-xl bg-primary-600/20 flex items-center justify-center text-primary-400 font-black text-sm shrink-0">
               {u.name.charAt(0).toUpperCase()}
             </div>
@@ -362,12 +465,6 @@ function ClientsManager() {
               <p className="font-semibold text-white text-sm">{u.name}</p>
               <p className="text-white/40 text-xs">{u.email} · ⭐ {u.points ?? 0} pts</p>
             </div>
-            <button onClick={() => toggleCoupon(u.email)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                couponEmails.includes(u.email) ? 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-400' : 'bg-white/5 border border-white/10 text-white/40 hover:text-white/60'
-              }`}>
-              {couponEmails.includes(u.email) ? <Check size={11} /> : null} Cupón
-            </button>
           </div>
         ))
       )}

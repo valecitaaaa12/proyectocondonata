@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { X, Trash2, Plus, Minus, ShoppingCart, Send, Wind, Tag, Star, Gift } from 'lucide-react'
+import { X, Trash2, Plus, Minus, ShoppingCart, Send, Wind, Star } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { logSale } from '../context/AdminContext'
@@ -7,36 +6,10 @@ import { logSale } from '../context/AdminContext'
 export default function Cart() {
   const {
     items, isOpen, setIsOpen, removeItem, changeQty, clearCart,
-    subtotal, couponDiscount, total, count,
-    coupon, setCoupon,
+    subtotal, total, count,
     pointsRedeemed, setPointsRedeemed,
   } = useCart()
-  const { currentUser, validateCoupon, addOrderPoints, addOrder, consumeCoupon } = useAuth()
-
-  const [couponInput, setCouponInput]   = useState('')
-  const [couponError, setCouponError]   = useState('')
-  const [couponLoading, setCouponLoading] = useState(false)
-
-  const handleApplyCoupon = async () => {
-    if (!couponInput.trim()) return
-    setCouponLoading(true)
-    setCouponError('')
-    await new Promise(r => setTimeout(r, 400))
-    const result = validateCoupon(couponInput.trim())
-    if (result.ok) {
-      setCoupon({ code: couponInput.trim(), discount: result.discount, label: result.label })
-      setCouponInput('')
-    } else {
-      setCouponError(result.error)
-    }
-    setCouponLoading(false)
-  }
-
-  const removeCoupon = () => {
-    setCoupon(null)
-    setCouponInput('')
-    setCouponError('')
-  }
+  const { currentUser, addOrderPoints, addOrder } = useAuth()
 
   const removePoints = () => {
     setPointsRedeemed(0)
@@ -52,21 +25,19 @@ export default function Cart() {
     }).join('\n\n')
 
     let discountLines = ''
-    if (couponDiscount > 0) discountLines += `\n🏷️ Cupón (${coupon.code}): -Bs. ${couponDiscount}`
     if (pointsRedeemed > 0) discountLines += `\n⭐ Descuento puntos: -Bs. ${pointsRedeemed}`
 
     const userName = currentUser ? `\n👤 Cliente: *${currentUser.name}*` : ''
     const text = `Hola Bad Bunny Vape! 👋${userName}\n\nQuiero hacer el siguiente pedido:\n\n${lines}\n\nSubtotal: Bs. ${subtotal.toLocaleString('es-BO')}${discountLines}\n\n*Total: Bs. ${total.toLocaleString('es-BO')}*\n\n📦 Necesito envío a domicilio — por favor coordinen el costo y barrio.\n\nDirección tienda: Juan Jose Perez 583, Sucre`
 
     // Log sale
-    const orderData = { items: items.map(i => ({ name: i.name, qty: i.qty, price: i.price })), total, coupon: coupon?.code }
+    const orderData = { items: items.map(i => ({ name: i.name, qty: i.qty, price: i.price })), total }
     logSale({ ...orderData, user: currentUser?.email || 'anonymous' })
 
     // Give points and register order if logged in
     if (currentUser) {
       addOrderPoints(total)
       addOrder(orderData)
-      if (coupon) consumeCoupon()
     }
 
     window.open(`https://wa.me/59178580928?text=${encodeURIComponent(text)}`, '_blank')
@@ -180,45 +151,6 @@ export default function Cart() {
               </div>
             )}
 
-            {/* Coupon */}
-            {coupon ? (
-              <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <Tag size={13} className="text-emerald-400" />
-                  <span className="text-emerald-300 text-xs font-semibold">{coupon.label}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-emerald-300 text-xs font-bold">-Bs. {couponDiscount}</span>
-                  <button onClick={removeCoupon} className="text-emerald-400/50 hover:text-rose-400 transition-colors">
-                    <X size={12} />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Tag size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
-                  <input
-                    type="text"
-                    value={couponInput}
-                    onChange={e => { setCouponInput(e.target.value); setCouponError('') }}
-                    onKeyDown={e => e.key === 'Enter' && handleApplyCoupon()}
-                    placeholder="Cupón de descuento"
-                    className="input-field pl-8 text-sm py-2.5"
-                  />
-                </div>
-                <button
-                  onClick={handleApplyCoupon}
-                  disabled={couponLoading || !couponInput.trim()}
-                  className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:bg-primary-600/30 hover:border-primary-500/40 hover:text-white transition-all duration-200 text-xs font-bold disabled:opacity-40">
-                  {couponLoading ? '...' : 'Aplicar'}
-                </button>
-              </div>
-            )}
-            {couponError && (
-              <p className="text-rose-400 text-xs font-medium">{couponError}</p>
-            )}
-
             {/* Totals */}
             <div className="space-y-1.5">
               {items.map(item => (
@@ -230,7 +162,7 @@ export default function Cart() {
               ))}
             </div>
 
-            {(couponDiscount > 0 || pointsRedeemed > 0) && (
+            {pointsRedeemed > 0 && (
               <div className="flex justify-between text-xs text-white/40 border-t border-white/5 pt-1.5">
                 <span>Subtotal</span>
                 <span>Bs. {subtotal.toLocaleString('es-BO')}</span>
