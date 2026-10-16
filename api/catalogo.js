@@ -36,9 +36,10 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     const cache = { 'Cache-Control': 'public, s-maxage=15, stale-while-revalidate=300' }
     try {
-      const text = await get(BLOB_PATH)
+      const blobRes = await get(BLOB_PATH, { access: 'private', token: process.env.BLOB_READ_WRITE_TOKEN })
+      const text = await new Response(blobRes.stream).text()
       return json(res, 200, JSON.parse(text), cache)
-    } catch {
+    } catch (err) {
       // Aún no se publicó nada, o error puntual → catálogo base
       return json(res, 200, EMPTY, cache)
     }
