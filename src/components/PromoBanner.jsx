@@ -16,14 +16,11 @@ export default function PromoBanner() {
 
           {/* ── Texto ── */}
           <div>
-            {/* Badge "Abierto por Error" */}
+            {/* Badges */}
             <div className="flex flex-wrap gap-3 mb-6">
               <div className="inline-flex items-center gap-2 bg-amber-400/15 border border-amber-400/40 text-amber-300 text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider">
                 <Zap size={11} className="fill-amber-400 text-amber-400" />
                 Oferta especial
-              </div>
-              <div className="inline-flex items-center gap-1.5 bg-blue-500/20 border border-blue-400/40 text-blue-300 text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider">
-                🔓 Abierto por Error
               </div>
             </div>
 

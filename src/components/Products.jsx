@@ -7,6 +7,8 @@ import {
 import { categories } from '../data/products'
 import { getMergedProducts } from '../context/AdminContext'
 import NewProductBanner from './NewProductBanner'
+import PromoHoyBanner from './PromoHoyBanner'
+import { usePromoState } from '../hooks/usePromo'
 import { useCart } from '../context/CartContext'
 import { useAdmin } from '../context/AdminContext'
 import { useAuth } from '../context/AuthContext'
@@ -252,6 +254,15 @@ function ProductCard({ p, compareList, onCompareToggle, animDelay = 0 }) {
                     </span>
                   </>
                 )}
+                {/* Promo del día: precio original tachado + descuento */}
+                {p.promoDiscount && !p.oldPrice && p.basePrice && (
+                  <span className="text-white/30 text-xs line-through">Bs. {p.basePrice}</span>
+                )}
+                {p.promoDiscount && (
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-rose-500/25 border border-rose-400/40 text-rose-200">
+                    🔥 −{p.promoDiscount} Bs
+                  </span>
+                )}
               </>
             ) : (
               <span className="text-amber-400 font-bold text-sm">Consultar</span>
@@ -425,6 +436,9 @@ const tabAccents = { all: '#ec4899', desechable: '#38bdf8', tipoC: '#a78bfa', le
 
 // ── Main Products section ─────────────────────────────────────────────────────
 export default function Products() {
+  // Reloj de la promo del día: mantiene vivos los precios mientras la promo
+  // esté visible, para que corte exacto a las 13:00 y a las 14:00
+  const promo = usePromoState()
   const products = getMergedProducts()
   const [activeTab,   setActiveTab]   = useState('all')
   const [search,      setSearch]      = useState('')
@@ -466,6 +480,8 @@ export default function Products() {
         </div>
 
         <NewProductBanner />
+
+        <PromoHoyBanner state={promo} />
 
         {/* ── Catalog panel ── */}
         <div className="catalog-panel">

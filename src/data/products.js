@@ -305,7 +305,7 @@ export const products = [
     flavors: ['Minty Thrill', 'Pineapple Punch', 'Blueberry Grapefruit', 'Bluerazz Bash', 'Watermelon Sour Berry', 'Grape Escape', 'Merry Berry', 'Strawberry Funk', 'Cherry Pop', 'Strawberry Blueberry', 'WTF'],
     price: 180,
     oldPrice: null,
-    promoTag: '120 Bs (Abierto por Error)',
+    promoTag: null,
   },
   {
     id: 17,
@@ -521,7 +521,7 @@ export const products = [
     flavors: ['Strawberry Bubblegum', 'Cherry Huls', 'Strawberry Kiwi', 'Mint Bubblegum', 'Grape Ice', 'Watermelon Bubblegum', 'Watermelon Hils'],
     price: 240,
     oldPrice: null,
-    promoTag: 'Strawberry Kiwi: 210 Bs (Abierto por Error)',
+    promoTag: null,
   },
 
   // ─────────────────────────────────────────────
@@ -687,7 +687,7 @@ export const products = [
     flavors: ['Fresh Mint', 'Strawberry Ice', 'Blue Berry Ice', 'Watermelon'],
     price: 180,
     oldPrice: null,
-    promoTag: 'Blue Berry Ice y Watermelon: 160 Bs (Abierto por Error)',
+    promoTag: null,
   },
   {
     id: 38,
@@ -705,7 +705,7 @@ export const products = [
     flavors: ['Fresh Mint', 'Strawberry Ice', 'Blue Berry Ice', 'Watermelon'],
     price: 250,
     oldPrice: null,
-    promoTag: 'Blue Berry Ice y Watermelon: 160 Bs (Abierto por Error)',
+    promoTag: null,
   },
   {
     id: 39,

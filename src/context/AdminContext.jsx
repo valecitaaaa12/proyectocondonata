@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react'
 import { products as BASE_PRODUCTS } from '../data/products'
+import { applyPromo } from '../data/promos'
 
 // ── Credentials ───────────────────────────────────────────────────────────────
 const ADMIN_USER = 'ValeValda'
@@ -128,14 +129,22 @@ export function logSale(data) {
   localStorage.setItem(SALES_KEY, JSON.stringify(list.slice(0, 500)))
 }
 
-// Merge base + publicado + borrador local → catálogo completo que se muestra
-export function getMergedProducts() {
+// Catálogo "en bruto": base + cambios publicados + borrador local.
+// SIN la promo global del día → es lo que usa el panel admin para editar y
+// publicar, así un descuento temporal jamás se le graba al catálogo.
+export function getMergedProductsRaw() {
   const edits  = effectiveEdits()
   const merged = BASE_PRODUCTS.map(p => {
     const patch = edits[p.id]
     return patch ? { ...p, ...patch } : p
   })
   return [...merged, ...effectiveCustoms()]
+}
+
+// Merge base + publicado + borrador local → catálogo completo que se muestra.
+// Si la promo del día está activa, aplica el descuento a todos los productos.
+export function getMergedProducts() {
+  return applyPromo(getMergedProductsRaw())
 }
 
 export function AdminProvider({ children }) {

@@ -118,19 +118,6 @@ export default function Mayoreo() {
               </div>
             </div>
 
-            {/* "Abierto por Error" tag explicación */}
-            <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-5">
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">🔓</span>
-                <div>
-                  <h4 className="font-semibold text-green-300 text-sm mb-1">¿Qué significa "Abierto por Error"?</h4>
-                  <p className="text-green-200/60 text-xs leading-relaxed">
-                    Precio especial en productos que fueron abiertos para demostración o revisión de calidad. 
-                    Funcionan perfectamente y tienen descuento adicional. Consultanos por WhatsApp disponibilidad.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

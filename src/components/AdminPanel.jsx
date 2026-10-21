@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X, Package, Users, BarChart2, ShieldCheck, Eye, EyeOff, LogOut, Check, Edit2, RotateCcw, Plus, Trash2, Megaphone } from 'lucide-react'
-import { useAdmin, loadSalesLog, loadAgeVerifications, getMergedProducts } from '../context/AdminContext'
+import { useAdmin, loadSalesLog, loadAgeVerifications, getMergedProductsRaw } from '../context/AdminContext'
 import { useAuth } from '../context/AuthContext'
 import { products as BASE_PRODUCTS, categories } from '../data/products'
 import PromoNotifier from './PromoNotifier'
@@ -70,7 +70,7 @@ function AdminLogin({ onClose }) {
 function StockManager() {
   const { stockOverrides, setStock, setProductDisabled } = useAdmin()
   const [search, setSearch] = useState('')
-  const allProducts = getMergedProducts()
+  const allProducts = getMergedProductsRaw()
   const filtered = allProducts.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     p.brand.toLowerCase().includes(search.toLowerCase())
@@ -257,7 +257,7 @@ function ProductEditor() {
   const [publishedOk, setPublishedOk] = useState(false)
   const [newDraft, setNewDraft] = useState({ name: '', brand: '', category: 'tipoC', price: '', oldPrice: '', puffs: '', nicotina: '5%', tipo: '', desc: '', badge: 'nuevo', badgeText: 'NUEVO', flavors: '', promoTag: '' })
 
-  const allProducts = getMergedProducts()
+  const allProducts = getMergedProductsRaw()
   const filtered = allProducts.filter(p => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.brand.toLowerCase().includes(search.toLowerCase())
     const matchCat = catFilter === 'all' || p.category === catFilter
