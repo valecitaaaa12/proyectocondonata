@@ -3,23 +3,16 @@ import { ShoppingCart, Wind, Menu, X, User, LogIn } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import UserProfile from './UserProfile'
+import { TABS } from '../data/tabs'
 
-const navLinks = [
-  { href: '#inicio',    label: 'Inicio' },
-  { href: '#productos', label: 'Catálogo' },
-  { href: '#marcas',    label: 'Marcas' },
-  { href: '#mayoreo',   label: 'Mayoreo' },
-  { href: '#comunidad', label: 'Comunidad' },
-  { href: '#guias',     label: 'Guías' },
-  { href: '#contacto',  label: 'Contacto' },
-]
-
-export default function Navbar() {
+export default function Navbar({ tab = 'inicio', setTab = () => {} }) {
   const { count, setIsOpen }        = useCart()
   const { currentUser, setAuthModal } = useAuth()
   const [scrolled,  setScrolled]   = useState(false)
   const [menuOpen,  setMenuOpen]   = useState(false)
   const [showProfile, setShowProfile] = useState(false)
+
+  const goTab = (id) => { setTab(id); setMenuOpen(false) }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -32,7 +25,7 @@ export default function Navbar() {
       <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
         scrolled ? 'bg-dark-900/95 backdrop-blur-md shadow-lg shadow-black/30 py-3' : 'py-5'
       }`}>
-        <div className="max-w-6xl mx-auto px-5 flex items-center justify-between gap-6">
+        <div className="max-w-6xl mx-auto px-5 flex items-center justify-between gap-4 xl:gap-6">
 
           {/* Logo */}
           <a href="#inicio" className="flex items-center gap-2.5 font-extrabold text-xl shrink-0">
@@ -42,14 +35,17 @@ export default function Navbar() {
             <span className="text-white">Bad Bunny <span className="text-primary-500">Vape</span></span>
           </a>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-7">
-            {navLinks.map(l => (
-              <a key={l.href} href={l.href}
-                className="text-sm font-medium text-white/50 hover:text-white transition-colors relative group">
-                {l.label}
-                <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary-500 group-hover:w-full transition-all duration-300" />
-              </a>
+          {/* Desktop nav — pestañas */}
+          <nav className="hidden lg:flex items-center gap-1 bg-dark-800/70 border border-white/10 rounded-2xl p-1.5 shrink-0">
+            {TABS.map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)} aria-current={tab === t.id ? 'page' : undefined}
+                className={`px-2.5 xl:px-3 py-1.5 rounded-xl text-[13px] font-semibold whitespace-nowrap transition-all duration-200 ${
+                  tab === t.id
+                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/25'
+                    : 'text-white/55 hover:text-white hover:bg-white/5'
+                }`}>
+                {t.label}
+              </button>
             ))}
           </nav>
 
@@ -89,21 +85,23 @@ export default function Navbar() {
             </button>
 
             <button onClick={() => setMenuOpen(v => !v)}
-              className="md:hidden w-10 h-10 rounded-xl bg-dark-700 border border-white/10 flex items-center justify-center text-white/70"
+              className="lg:hidden w-10 h-10 rounded-xl bg-dark-700 border border-white/10 flex items-center justify-center text-white/70"
               aria-label="Menú">
               {menuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile menu */}
-        <div className={`md:hidden overflow-hidden transition-all duration-300 ${menuOpen ? 'max-h-80' : 'max-h-0'}`}>
+        {/* Mobile menu — pestañas */}
+        <div className={`lg:hidden overflow-hidden transition-all duration-300 ${menuOpen ? 'max-h-[30rem]' : 'max-h-0'}`}>
           <nav className="flex flex-col gap-1 px-5 pb-4 pt-2 bg-dark-900/98 border-t border-white/5">
-            {navLinks.map(l => (
-              <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)}
-                className="text-sm font-medium text-white/60 hover:text-white py-2 transition-colors">
-                {l.label}
-              </a>
+            {TABS.map(t => (
+              <button key={t.id} onClick={() => goTab(t.id)} aria-current={tab === t.id ? 'page' : undefined}
+                className={`text-sm font-semibold py-2.5 px-3 rounded-xl text-left transition-colors ${
+                  tab === t.id ? 'bg-primary-600/20 text-primary-400' : 'text-white/60 hover:text-white hover:bg-white/5'
+                }`}>
+                {t.label}
+              </button>
             ))}
             <div className="border-t border-white/5 pt-3 mt-1">
               {currentUser ? (

@@ -25,21 +25,59 @@ import AdminPanel          from './components/AdminPanel'
 import { CartProvider }    from './context/CartContext'
 import { AuthProvider }    from './context/AuthContext'
 import { AdminProvider }   from './context/AdminContext'
+import { TAB_HASH, ANCHOR_TAB, tabFromHash } from './data/tabs'
 
 export default function App() {
   const [verified,  setVerified]  = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
+  // Pestaña activa: arranca según el hash con el que entraron (deep links intactos)
+  const [tab, setTabState] = useState(() => tabFromHash(window.location.hash))
 
+  // Cambia de pestaña, actualiza la URL y lleva el scroll al sitio correcto
+  const setTab = (t, hash) => {
+    setTabState(t)
+    const h = hash || TAB_HASH[t] || '#inicio'
+    if (window.location.hash !== h) history.replaceState(null, '', window.location.pathname + h)
+    setTimeout(() => {
+      const id = h.replace(/^#/, '')
+      const el = id ? document.getElementById(id) : null
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      else window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 60)
+  }
+
+  // #admin abre el panel; cualquier otra ancla interna la resuelve como pestaña
   useEffect(() => {
     const checkHash = () => {
-      if (window.location.hash === '#admin') {
+      const hash = window.location.hash
+      if (hash === '#admin') {
         setShowAdmin(true)
         history.replaceState(null, '', window.location.pathname)
+        return
       }
+      const t = tabFromHash(hash)
+      if (hash && t !== tab) setTabState(t)
     }
     checkHash()
     window.addEventListener('hashchange', checkHash)
     return () => window.removeEventListener('hashchange', checkHash)
+  }, [tab])
+
+  // Interceptor global: cualquier <a href="#..."> conmuta a su pestaña
+  useEffect(() => {
+    const onClick = (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      const a = e.target.closest?.('a[href^="#"]')
+      if (!a) return
+      const hash = a.getAttribute('href')
+      if (!hash || hash === '#' || hash === '#admin') return
+      const t = ANCHOR_TAB[hash.slice(1)]
+      if (!t) return
+      e.preventDefault()
+      setTab(t, hash)
+    }
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
   }, [])
 
   if (!verified) {
@@ -57,21 +95,31 @@ export default function App() {
         <CartProvider>
           <div className="min-h-screen bg-dark-900 animate-[fadeIn_0.6s_ease]">
             <ShippingBanner />
-            <Navbar />
+            <Navbar tab={tab} setTab={setTab} />
             <main>
-              <Hero />
-              <Stats />
-              <Products />
-              <WeeklyFlavors />
-              <CommunitySection />
-              <PromoEngine />
-              <BudgetFinder />
-              <Brands />
-              <PromoBanner />
-              <Mayoreo />
-              <InfoSection />
-              <Guides />
-              <Contact />
+              {tab === 'inicio' && (
+                <>
+                  <Hero />
+                  <Stats />
+                  <InfoSection />
+                </>
+              )}
+
+              {tab === 'catalogo' && (
+                <>
+                  <Products />
+                  <PromoBanner />
+                  <WeeklyFlavors />
+                  <PromoEngine />
+                  <BudgetFinder />
+                </>
+              )}
+
+              {tab === 'marcas'    && <Brands />}
+              {tab === 'mayoreo'   && <Mayoreo />}
+              {tab === 'comunidad' && <CommunitySection />}
+              {tab === 'guias'     && <Guides />}
+              {tab === 'contacto'  && <Contact />}
             </main>
             <Footer />
             <Cart />
