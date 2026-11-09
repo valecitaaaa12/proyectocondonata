@@ -31,7 +31,7 @@ export const products = [
     flavors: ['Grape', 'Passion Fruit'],
     price: 40,
     oldPrice: null,
-    promoTag: '1×20 Bs',
+    promoTag: '1×35 Bs',
   },
   {
     id: 2,
